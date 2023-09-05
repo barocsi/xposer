@@ -1,0 +1,6 @@
+confluent_kafka==2.2.0
+fastapi==0.103.1
+pydantic==2.3.0
+pydantic_settings==2.0.3
+PyYAML
+setuptools==59.6.0
