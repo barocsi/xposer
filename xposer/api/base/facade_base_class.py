@@ -48,7 +48,7 @@ class FacadeBaseClass(AbstractFacade):
     def kafkaRouterInboundHandler(self, data):
         raise NotImplementedError
 
-    def initializeKafkaRouter(self, handlerFunc, start_immediately: bool = True):
+    def initializeKafkaRouter(self, handlerFunc, start_immediately: bool = True, produce_on_result: bool = False):
         # Initialize workers
         consumer_config = {
             'bootstrap.servers': self.config.router_kafka_server_string,
@@ -62,9 +62,12 @@ class FacadeBaseClass(AbstractFacade):
                                  'input_topic',
                                  'output_topic',
                                  'exception_topic',
-                                 handlerFunc)
+                                 handlerFunc,
+                                 produce_on_result)
         self.kafka_router = router
+        self.ctx.logger.debug("FacadeBaseClass Built-in kafka router initialized")
         if start_immediately:
+            self.ctx.logger.debug("FacadeBaseClass Built-in kafka router started")
             self.kafka_router.start()
         return router
 

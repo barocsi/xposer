@@ -1,0 +1,15 @@
+# boot and facade
+facade_module_name: "sample_app"
+facade_class_name: "FacadeIntraExtractPipeline"
+
+# Logging
+log_to_console_enabled: "true"
+log_to_console_loglevel: "DEBUG"
+log_to_kafka_enabled: "false"
+log_to_kafka_server_string: "123"
+
+# Facade config
+fac_bar: "baz"
+
+# App config
+app_logic_param_to_override: "jens"
