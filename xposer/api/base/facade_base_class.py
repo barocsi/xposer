@@ -8,22 +8,17 @@ from xposer.models.base_routers_config_model import BaseRoutersConfigModel
 
 
 class FacadeBaseClass(AbstractFacade):
-    name: str
-    config: BaseRoutersConfigModel | Any
-    config_prefix: str
-    kafka_router: BaseKafkaRouter
-    socket_router: BaseKafkaRouter
-    http_router: BaseKafkaRouter
+    name: str = "FacadeBaseClass"
+    config: BaseRoutersConfigModel | Any = None
+    config_prefix: str = ''
+    kafka_router: BaseKafkaRouter = None
+    socket_router: BaseKafkaRouter = None
+    http_router: BaseKafkaRouter = None
 
     def __init__(self, ctx: Context):
         super().__init__(ctx)
-        self.name = "FacadeBaseClass"
-        self.config = None
-        self.config_prefix = ''
-        self.kafka_router = None
-        self.socket_router = None
-        self.http_router = None
         self.mergeConfigurationFromPrefix()
+        self.initializeAppsBeforeRouters()
         self.initializeRouters()
 
     def constructConfigModel(self) -> BaseRoutersConfigModel:
@@ -38,8 +33,7 @@ class FacadeBaseClass(AbstractFacade):
         # Merge facade specific configuration parameters
         worker_config_prefix_merged = Configurator.mergePrefixedAttributes(worker_config_merged,
                                                                            self.ctx.config,
-                                                                           self.config_prefix,
-                                                                           allow_extra=True)
+                                                                           self.config_prefix)
         worker_config_prefix_merged.model_validate(worker_config_prefix_merged)
         self.config = worker_config_prefix_merged
 
@@ -70,6 +64,9 @@ class FacadeBaseClass(AbstractFacade):
             self.ctx.logger.debug("FacadeBaseClass Built-in kafka router started")
             self.kafka_router.start()
         return router
+
+    def initializeAppsBeforeRouters(self):
+        raise NotImplementedError
 
     def initializeRouters(self):
         raise NotImplementedError

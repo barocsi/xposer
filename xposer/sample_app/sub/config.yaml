@@ -1,6 +1,6 @@
 # boot and facade
-facade_module_name: "sample_app"
-facade_class_name: "FacadeIntraExtractPipeline"
+facade_module_name: "xposer.sample_app.sub.facade"
+facade_class_name: "FacadeSub"
 
 # Logging
 log_to_console_enabled: "true"
@@ -8,8 +8,15 @@ log_to_console_loglevel: "DEBUG"
 log_to_kafka_enabled: "false"
 log_to_kafka_server_string: "123"
 
-# Facade config
+# Built-in config
+router_kafka_inbound_topic: "router_inbound"
+router_kafka_outbound_topic: "router_outbound"
+router_kafka_exception_topic: "router_exception"
+router_kafka_server_string: "localhost:9092"
+router_kafka_group_id: "router"
+
+# Facade Sub config
 fac_bar: "baz"
 
-# App config
-app_logic_param_to_override: "jens"
+# App Sub config
+app_logic_param_to_override: "not_jens"

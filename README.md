@@ -1,8 +1,19 @@
 # xposer
 
+## Concept
 
+## Booting
 
-## Getting started
+## Configuration
+
+- Environment variable XPOSER_CONFIG defines from where to load the config file. This can be overridden using --config command line argument
+- All parameters present in the configuration file can be ad-hoc overridden using command line arguments, because those arguments will be written to the root configuration object from which downstream components yield their configuration parameters
+- The configuration is consumed by the xposer
+## Examples
+
+### Pub
+
+### Sub
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.
 
