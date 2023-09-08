@@ -1,5 +1,7 @@
 # xposer
 
+Unified handler logic exposition over various channels using centralized logger and configuration management with context propagation
+
 ## Configuration
 
 - Environment variable XPOSER_CONFIG defines from where to load the config file. This can be overridden using --config
