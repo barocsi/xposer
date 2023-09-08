@@ -1,9 +1,8 @@
-import sys
 from pydantic import Field, ConfigDict
 
 from xposer.api.base.facade_base_class import FacadeBaseClass
-from xposer.models.base_routers_config_model import BaseRoutersConfigModel
-from xposer.sample_app.sub.app import AppSub
+from xposer.api.base.base_routers_config_model import BaseRoutersConfigModel
+from xposer.sample_app.rpc_kafka.app import AppSub
 
 
 class FacadeSubModel(BaseRoutersConfigModel):
@@ -13,8 +12,7 @@ class FacadeSubModel(BaseRoutersConfigModel):
     model_config = ConfigDict(extra='allow')
 
 
-class FacadeSub(FacadeBaseClass):
-    name: str = "FacadeSample"
+class FacadeRPC(FacadeBaseClass):
     config_prefix: str = "fac_"
     app: AppSub = None
 
@@ -23,12 +21,13 @@ class FacadeSub(FacadeBaseClass):
 
     def initializeRouters(self):
         """All routers (built-in or external) must be initialized at this step"""
-        self.initializeKafkaRouter(handlerFunc=self.app.SampleCall,
-                                   start_immediately=True)
+        self.initializeKafkaRouter(handlerFunc=self.app.RPCHandler,
+                                   start_immediately=True,
+                                   produce_on_result=True)
 
     def initializeAppsBeforeRouters(self):
         self.app = AppSub(self.ctx)
 
     def start(self):
         self.ctx.logger.debug(f"Facade configuration:\n{self.config.model_dump_json(indent=4)}")
-        self.ctx.logger.debug(f"Facade starting: {self.name}")
+        self.ctx.logger.debug(f"Facade starting: {self.__class__.__name__}")

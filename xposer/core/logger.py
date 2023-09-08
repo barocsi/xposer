@@ -2,7 +2,7 @@ import logging
 
 from confluent_kafka import Producer
 
-from xposer.models.configuration_model import ConfigModel
+from xposer.core.configuration_model import ConfigModel
 
 
 class KafkaLoggingHandler(logging.Handler):
@@ -13,7 +13,7 @@ class KafkaLoggingHandler(logging.Handler):
 
     def emit(self, record):
         msg = self.format(record)
-        topic = self.topic_map.get(record.levelname, 'default_topic')
+        topic = self.topic_map.get(record.levelname, 'debug_topic')
         self.kafka_producer.produce(topic, msg)
 
 
@@ -31,6 +31,7 @@ def get_logger(appConfig: ConfigModel):
 
     # Kafka Handler
     if appConfig.log_to_kafka_enabled:
+        print(appConfig.log_to_kafka_server_string)
         kafka_config = {
             'bootstrap.servers': appConfig.log_to_kafka_server_string
         }
@@ -47,5 +48,6 @@ def get_logger(appConfig: ConfigModel):
         kafka_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         kafka_handler.setFormatter(kafka_formatter)
         logger.addHandler(kafka_handler)
+        logger.debug(f"Logger initialized: {logger.name}")
 
     return logger

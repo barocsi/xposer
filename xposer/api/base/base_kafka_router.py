@@ -2,10 +2,13 @@ import json
 
 from confluent_kafka import Consumer, Producer
 
+from xposer.core.context import Context
+
 
 class BaseKafkaRouter:
-
+    ctx:Context = None
     def __init__(self,
+                 ctx:Context,
                  consumer_config,
                  producer_config,
                  inbound_topic,
@@ -13,6 +16,7 @@ class BaseKafkaRouter:
                  exception_topic,
                  handler_func,
                  produce_on_result):
+        self.ctx = ctx
         self.consumer = Consumer(consumer_config)
         self.producer = Producer(producer_config)
         self.inbound_topic = inbound_topic
@@ -42,4 +46,5 @@ class BaseKafkaRouter:
                             'exception': str(e),
                             'correlation_id': correlation_id  # Include the correlation ID in the exception response
                         }
+                        self.ctx.logger.exception(e)
                         self.producer.produce(self.exception_topic, json.dumps(exception_data))

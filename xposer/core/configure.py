@@ -4,7 +4,7 @@ import os
 import yaml
 from pydantic import BaseModel
 
-from xposer.models.configuration_model import ConfigModel
+from xposer.core.configuration_model import ConfigModel
 
 
 class Configurator:

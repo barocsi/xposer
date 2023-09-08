@@ -4,7 +4,7 @@ from xposer.api.base.base_kafka_router import BaseKafkaRouter
 from xposer.core.abstract_facade import AbstractFacade
 from xposer.core.configure import Configurator
 from xposer.core.context import Context
-from xposer.models.base_routers_config_model import BaseRoutersConfigModel
+from xposer.api.base.base_routers_config_model import BaseRoutersConfigModel
 
 
 class FacadeBaseClass(AbstractFacade):
@@ -42,22 +42,28 @@ class FacadeBaseClass(AbstractFacade):
     def kafkaRouterInboundHandler(self, data):
         raise NotImplementedError
 
-    def initializeKafkaRouter(self, handlerFunc, start_immediately: bool = True, produce_on_result: bool = False):
+    def initializeKafkaRouter(self,
+                              handlerFunc,
+                              start_immediately: bool = True,
+                              produce_on_result: bool = False):
         # Initialize workers
         consumer_config = {
             'bootstrap.servers': self.config.router_kafka_server_string,
-            'group.id': self.config.router_kafka_group_id
+            'group.id': self.config.router_kafka_group_id,
+            'auto.offset.reset': 'earliest'
         }
         producer_config = {
             'bootstrap.servers': self.config.router_kafka_server_string
         }
-        router = BaseKafkaRouter(consumer_config,
-                                 producer_config,
-                                 'input_topic',
-                                 'output_topic',
-                                 'exception_topic',
-                                 handlerFunc,
-                                 produce_on_result)
+        router = BaseKafkaRouter(
+            self.ctx,
+            consumer_config,
+            producer_config,
+            self.config.router_kafka_inbound_topic,
+            self.config.router_kafka_outbound_topic,
+            self.config.router_kafka_exception_topic,
+            handlerFunc,
+            produce_on_result)
         self.kafka_router = router
         self.ctx.logger.debug("FacadeBaseClass Built-in kafka router initialized")
         if start_immediately:

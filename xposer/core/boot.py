@@ -2,7 +2,7 @@ from xposer.core.configure import Configurator
 from xposer.core.context import Context
 from xposer.core.facade_factory import FacadeFactory
 from xposer.core.logger import get_logger
-from xposer.models.configuration_model import ConfigModel
+from xposer.core.configuration_model import ConfigModel
 
 
 class Boot:

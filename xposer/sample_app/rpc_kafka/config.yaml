@@ -1,18 +1,18 @@
 # boot and facade
-facade_module_name: "xposer.sample_app.sub.facade"
+facade_module_name: "xposer.sample_app.rpc_kafka.facade"
 facade_class_name: "FacadeSub"
 
 # Logging
 log_to_console_enabled: "true"
 log_to_console_loglevel: "DEBUG"
-log_to_kafka_enabled: "false"
-log_to_kafka_server_string: "123"
+log_to_kafka_enabled: "true"
+log_to_kafka_server_string: "0.0.0.0:9092"
 
 # Built-in config
 router_kafka_inbound_topic: "router_inbound"
 router_kafka_outbound_topic: "router_outbound"
 router_kafka_exception_topic: "router_exception"
-router_kafka_server_string: "localhost:9092"
+router_kafka_server_string: "0.0.0.0:9092"
 router_kafka_group_id: "router"
 
 # Facade Sub config

@@ -1,6 +1,6 @@
 from logging import Logger
 
-from xposer.models.configuration_model import ConfigModel
+from xposer.core.configuration_model import ConfigModel
 
 
 class Context:
