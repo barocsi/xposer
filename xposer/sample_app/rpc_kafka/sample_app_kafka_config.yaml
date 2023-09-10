@@ -1,0 +1,20 @@
+# boot and facade
+facade_module_name: "xposer.sample_app.rpc_kafka.sample_app_kafka_facade"
+facade_class_name: "SampleAppKafkaFacade"
+
+# Logging
+log_to_console_enabled: "true"
+log_to_console_loglevel: "DEBUG"
+log_to_kafka_enabled: "true"
+log_to_kafka_server_string: "0.0.0.0:9092"
+
+# Built-in config
+app_kafka_inbound_topic: "router_inbound"
+app_kafka_outbound_topic: "router_outbound"
+app_kafka_exception_topic: "router_exception"
+app_kafka_server_string: "0.0.0.0:9092"
+app_kafka_group_id: "router"
+app_kafka_bar: "baz"
+
+# App Sub config
+app_kafka_logic_param_to_override: "not_jens"

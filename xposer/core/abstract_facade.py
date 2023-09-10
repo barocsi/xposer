@@ -33,6 +33,5 @@ class AbstractFacade(ABC):
         pass
 
     @abstractmethod
-    def start(self):
+    def afterInititalization(self):
         pass
-

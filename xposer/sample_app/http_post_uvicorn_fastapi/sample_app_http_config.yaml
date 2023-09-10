@@ -8,15 +8,8 @@ log_to_console_loglevel: "DEBUG"
 log_to_kafka_enabled: "true"
 log_to_kafka_server_string: "0.0.0.0:9092"
 
-# Built-in config
-router_kafka_inbound_topic: "router_inbound"
-router_kafka_outbound_topic: "router_outbound"
-router_kafka_exception_topic: "router_exception"
-router_kafka_server_string: "0.0.0.0:9092"
-router_kafka_group_id: "router"
-
 # Facade Sub config
-fac_bar: "baz"
+facfast_bar: "baz"
 
 # App Sub config
 app_logic_param_to_override: "not_jens"

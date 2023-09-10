@@ -1,50 +1,51 @@
 import json
-
+from typing import Any, Callable
+from xposer.api.base.base_router import BaseRouter, Context
 from confluent_kafka import Consumer, Producer
 
-from xposer.core.context import Context
 
+class BaseKafkaRouter(BaseRouter):
+    def init_router(self,
+                    app: Any,
+                    server_string: str,
+                    group_id: str,
+                    inbound_topic: str,
+                    outbound_topic: str,
+                    exception_topic: str,
+                    handler_func: Callable = None,
+                    produce_on_result: bool = False):
+        consumer_config = {
+            'bootstrap.servers': server_string,
+            'group.id': group_id,
+            'auto.offset.reset': 'earliest'
+        }
+        producer_config = {
+            'bootstrap.servers': server_string
+        }
 
-class BaseKafkaRouter:
-    ctx:Context = None
-    def __init__(self,
-                 ctx:Context,
-                 consumer_config,
-                 producer_config,
-                 inbound_topic,
-                 outbound_topic,
-                 exception_topic,
-                 handler_func,
-                 produce_on_result):
-        self.ctx = ctx
-        self.consumer = Consumer(consumer_config)
-        self.producer = Producer(producer_config)
-        self.inbound_topic = inbound_topic
-        self.outbound_topic = outbound_topic
-        self.exception_topic = exception_topic
-        self.handler_func = handler_func
-        self.produce_on_result = produce_on_result
-        self.consumer.subscribe([inbound_topic])
+        consumer = Consumer(consumer_config)
+        producer = Producer(producer_config)
+        consumer.subscribe([inbound_topic])
 
-    def start(self):
         while True:
-            msg = self.consumer.poll(1)
+            msg = consumer.poll(1)
             correlation_id = None
             if msg:
                 try:
                     data = json.loads(msg.value().decode('utf-8'))
                     correlation_id = data.get('correlation_id', 'N/A')
-                    processed_data = self.handler_func(data)
+                    processed_data = handler_func(data)
                     response = {
                         'result': processed_data,
-                        'correlation_id': correlation_id  # Include the correlation ID in the response
+                        'correlation_id': correlation_id
                     }
-                    self.producer.produce(self.outbound_topic, json.dumps(response))
+                    if produce_on_result:
+                        producer.produce(outbound_topic, json.dumps(response))
                 except Exception as e:
-                    if self.exception_topic is not None:
+                    if exception_topic is not None:
                         exception_data = {
                             'exception': str(e),
-                            'correlation_id': correlation_id  # Include the correlation ID in the exception response
+                            'correlation_id': correlation_id
                         }
                         self.ctx.logger.exception(e)
-                        self.producer.produce(self.exception_topic, json.dumps(exception_data))
+                        producer.produce(exception_topic, json.dumps(exception_data))

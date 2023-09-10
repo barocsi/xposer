@@ -15,6 +15,6 @@ class Boot:
         logger.debug(f"Logger and configuration build completed. Configuration:\n{config_json_str}")
         context = Context(logger, config, {})
         facade = FacadeFactory.make(context)
-        facade.start()
+        facade.afterInititalization()
         logger.info(f"Boot sequence completed successfully. Facade {facade.name} started")
         return context

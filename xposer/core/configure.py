@@ -66,7 +66,7 @@ class Configurator:
             config_filename = os.environ.get("XPOSER_CONFIG")
 
         if config_filename is None:
-            config_filename = "config.yaml"
+            config_filename = "sample_app_http_config.yaml"
 
         if config_filename is None:
             raise EnvironmentError(f"Missing environment variable for building context: {config_filename}")
