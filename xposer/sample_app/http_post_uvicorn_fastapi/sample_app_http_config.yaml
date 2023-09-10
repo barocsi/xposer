@@ -1,6 +1,7 @@
 # boot and facade
-facade_module_name: "xposer.sample_app.rpc_kafka.facade"
-facade_class_name: "FacadeSub"
+facade_module_name: "xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http_facade"
+facade_class_name: "SampleAppHttpFacade"
+highlevel_variable: "passed"
 
 # Logging
 log_to_console_enabled: "true"
@@ -8,8 +9,6 @@ log_to_console_loglevel: "DEBUG"
 log_to_kafka_enabled: "true"
 log_to_kafka_server_string: "0.0.0.0:9092"
 
-# Facade Sub config
-facfast_bar: "baz"
-
-# App Sub config
-app_logic_param_to_override: "not_jens"
+# App level config
+app_fast_bar: "baz"
+app_fast_logic_param_to_override: "not_jens"

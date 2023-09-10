@@ -1,10 +1,11 @@
-from typing import Any, List
+from typing import Any
+
 from xposer.api.base.base_fastapi_router import BaseFastApiRouter
 from xposer.api.base.base_kafka_router import BaseKafkaRouter
+from xposer.api.base.base_kafka_router_config_model import BaseKafkaRouterConfigModel
 from xposer.core.abstract_facade import AbstractFacade
 from xposer.core.configure import Configurator
 from xposer.core.context import Context
-from xposer.api.base.base_kafka_router_config_model import BaseKafkaRouterConfigModel
 
 
 class FacadeBaseClass(AbstractFacade):

@@ -1,20 +1,11 @@
 import json
-import sys
-import os
 from typing import Any
 
-# sys.path.append(os.path.join(os.path.dirname(__file__), '../../../'))
-from xposer.core.boot import Boot
-from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
+from xposer.core.boot import Boot
 from xposer.core.configure import Configurator
 from xposer.core.context import Context
-
-
-class SampleAppKafkaDTO(BaseModel):
-    username: str
-    email: str
 
 
 class SampleAppKafkaConfigModel(BaseSettings):

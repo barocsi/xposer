@@ -1,7 +1,9 @@
 import json
 from typing import Any, Callable
-from xposer.api.base.base_router import BaseRouter, Context
+
 from confluent_kafka import Consumer, Producer
+
+from xposer.api.base.base_router import BaseRouter
 
 
 class BaseKafkaRouter(BaseRouter):

@@ -8,6 +8,7 @@ class Context:
     logger: Logger = None
     config: ConfigModel = None
     state = None
+    facade = None
 
     def __init__(self, logger, config, state):
         self.logger = logger

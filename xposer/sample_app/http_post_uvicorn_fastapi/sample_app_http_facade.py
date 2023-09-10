@@ -1,4 +1,4 @@
-from pydantic import Field, ConfigDict
+from pydantic import ConfigDict, Field
 
 from xposer.api.base.base_fastapi_router_config_model import BaseFastApiRouterConfigModel
 from xposer.api.base.facade_base_class import FacadeBaseClass
@@ -14,14 +14,16 @@ class SampleAppHttpConfigModel(BaseFastApiRouterConfigModel):
 
 
 class SampleAppHttpFacade(FacadeBaseClass):
-    config_prefix: str = "facfast_"
+    config_prefix: str = "app_fast_"
     app: SampleAppHTTP = None
+    http_router: SampleSampleAppHTTPRouter = None
 
     def constructConfigModel(self) -> SampleAppHttpConfigModel:
         return SampleAppHttpConfigModel.model_construct(_validate=False)
 
     def initializeRouters(self):
-        self.http_router = SampleSampleAppHTTPRouter(self.ctx, self.api, self.app)
+        self.http_router = SampleSampleAppHTTPRouter(self.ctx)
+        self.http_router.init_router(app=self.app, api_prefix='/api')
 
     def initializeAppsBeforeRouters(self):
         self.app = SampleAppHTTP(self.ctx)

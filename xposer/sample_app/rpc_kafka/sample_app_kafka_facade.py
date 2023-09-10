@@ -1,6 +1,7 @@
-from pydantic import Field, ConfigDict
-from xposer.api.base.facade_base_class import FacadeBaseClass
+from pydantic import ConfigDict, Field
+
 from xposer.api.base.base_kafka_router_config_model import BaseKafkaRouterConfigModel
+from xposer.api.base.facade_base_class import FacadeBaseClass
 from xposer.sample_app.rpc_kafka.sample_app_kafka import SampleAppKafka
 from xposer.sample_app.rpc_kafka.sample_app_kafka_router import SampleAppKafkaRouter
 

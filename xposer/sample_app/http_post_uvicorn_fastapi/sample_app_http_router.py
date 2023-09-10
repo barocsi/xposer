@@ -1,19 +1,17 @@
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, FastAPI
 
-from xposer.api.base.base_router import BaseRouter, Context
+from xposer.api.base.base_fastapi_router import BaseFastApiRouter
 from xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http import SampleAppHTTP
 
 
-class SampleSampleAppHTTPRouter(BaseRouter):
-    api_prefix = 'api'
+class SampleSampleAppHTTPRouter(BaseFastApiRouter):
 
-    def init_router(self, app: SampleAppHTTP):
+    def init_router(self, app: SampleAppHTTP, api_prefix: str = "/api"):
         self.api = FastAPI()
-
         router = APIRouter()
 
         @router.get("/test/")
-        def route1(ctx: Context = Depends(self.provide_context)):
-            return {"router": "custom", "ctx": ctx.value}
+        def sample_route():
+            return {"router": "custom", "somevariable": self.ctx.config.highlevel_variable}
 
-        self.api.include_router(router=router, prefix=self.api_prefix)
+        self.api.include_router(router=router, prefix=api_prefix)
