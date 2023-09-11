@@ -150,44 +150,32 @@ class Configurator:
             return yaml.safe_load(file)
 
     @staticmethod
-    def updateConfigFromArgs(model: ConfigModel, parser: argparse.ArgumentParser) -> ConfigModel:
-        # Get all fields from the pydantic model
-        model_fields = model.model_dump()
-
-        # Dynamically add arguments based on pydantic model fields
-        for field in model_fields:
-            parser.add_argument(f"--{field}")
-
+    def getVarsFromCLIArgs(parser: argparse.ArgumentParser) -> Dict:
         args, otherargs = parser.parse_known_args()
 
-        # Update model values based on provided arguments
-        argitems = vars(args).items()
-        for field, value in argitems:
-            if value is not None and field in model_fields:
-                setattr(model, field, type(model_fields[field])(value))
+        # Convert recognized arguments to dictionary
+        args_dict = vars(args)
 
-        return model
+        # Process otherargs to extract key-value pairs
+        otherargs_dict = {}
+        for item in otherargs:
+            if "=" in item:
+                key, value = item.lstrip('-').split('=', 1)
+                otherargs_dict[key] = value
+            else:
+                otherargs_dict[item.lstrip('-')] = True
+
+        # Merge dictionaries
+        return {**args_dict, **otherargs_dict}
 
     @staticmethod
     def buildConfig() -> ConfigModel:
-        ROOT_PREFIX: str = 'xp_'
+        ROOT_PREFIX: str = 'xpcore_'
         # Determine configuration_filename source and value
         parser = argparse.ArgumentParser()
         parser.add_argument("--config",
                             type=str,
                             help="Config file path",
-                            required=False,
-                            default=None
-                            )
-        parser.add_argument("--host",
-                            type=str,
-                            help="Reserved for Uvicorn and others",
-                            required=False,
-                            default=None
-                            )
-        parser.add_argument("--port",
-                            type=str,
-                            help="Reserved for Uvicorn and others",
                             required=False,
                             default=None
                             )
@@ -218,7 +206,13 @@ class Configurator:
              in os.environ.items()},
             ROOT_PREFIX)
 
-        cli_overridden_configuration = Configurator.updateConfigFromArgs(environment_overridden_configuration, parser)
+        cli_args_with_prefix = Configurator.getVarsFromCLIArgs(parser)
+
+        # Merge all variable from cli args (override where applicable)
+        cli_overridden_configuration: ConfigModel = Configurator.mergeAttributesWithPrefix(
+            environment_overridden_configuration,
+            cli_args_with_prefix,
+            ROOT_PREFIX)
 
         # Now do the validation business
         ConfigModel.model_validate(cli_overridden_configuration)

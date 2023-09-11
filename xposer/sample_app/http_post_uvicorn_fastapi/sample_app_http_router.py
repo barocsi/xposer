@@ -1,17 +1,20 @@
 from fastapi import APIRouter, FastAPI
 
 from xposer.api.base.base_fastapi_router import BaseFastApiRouter
-from xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http import SampleAppHTTP
 
 
 class SampleSampleAppHTTPRouter(BaseFastApiRouter):
 
-    def init_router(self, app: SampleAppHTTP, api_prefix: str = "/api"):
+    def start_router(self, api_prefix: str = "/api"):
         self.api = FastAPI()
         router = APIRouter()
 
         @router.get("/test/")
         def sample_route():
-            return {"router": "custom", "somevariable": self.ctx.config.highlevel_variable}
+            return {"router": "custom",
+                    "xpcore": self.ctx.config.model_dump(),
+                    "xpfacade": self.ctx.facade.config.model_dump(),
+                    "xpapp": self.ctx.facade.app.config.model_dump()
+                    }
 
         self.api.include_router(router=router, prefix=api_prefix)

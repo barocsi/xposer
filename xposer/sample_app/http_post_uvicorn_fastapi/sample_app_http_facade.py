@@ -25,7 +25,7 @@ class SampleAppHttpFacade(FacadeBaseClass):
 
     def initializeRouters(self):
         self.http_router = SampleSampleAppHTTPRouter(self.ctx)
-        self.http_router.init_router(app=self.app, api_prefix=self.api_prefix)
+        self.http_router.start_router(api_prefix=self.api_prefix)
 
     def initializeAppsBeforeRouters(self):
         self.app = SampleAppHTTP(self.ctx)

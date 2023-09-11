@@ -1,7 +1,7 @@
 import json
-from dataclasses import Field
 from typing import Any
 
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 from xposer.core.boot import Boot
@@ -17,14 +17,14 @@ class SampleAppKafkaConfigModel(BaseSettings):
 class SampleAppKafka:
     ctx: Context
     config: SampleAppKafkaConfigModel
-    config_prefix: str = "xp_app_internal"
+    config_prefix: str = "xpapp_"
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
-        self.config = Configurator.mergeAttributesWithPrefix(SampleAppKafkaConfigModel, ctx.config,
+        self.config = Configurator.mergeAttributesWithPrefix(SampleAppKafkaConfigModel,
+                                                             ctx.config,
                                                              self.config_prefix)
-        self.ctx.logger.debug(f"Initialized {self.__class__.__name__} "
-                              f"with configuration parameters:\n{self.config.model_dump_json(indent=4)}")
+        self.ctx.logger.info(f"Initialized {self.__class__.__name__}")
 
     def RPCHandler(self, data: Any):
         self.ctx.logger.info(

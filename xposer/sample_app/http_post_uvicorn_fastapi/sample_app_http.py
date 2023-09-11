@@ -4,7 +4,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic_settings import BaseSettings
 
 from xposer.core.boot import Boot
-from xposer.core.configure import Configurator
 from xposer.core.context import Context
 
 
@@ -24,13 +23,11 @@ class SampleAppHTTPConfigModel(BaseSettings):
 class SampleAppHTTP:
     ctx: Context
     config: SampleAppHTTPConfigModel
-    config_prefix: str = "xp_app_internal"
+    config_prefix: str = "xpapp_"
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
-        self.config = Configurator.mergeAttributesWithPrefix(SampleAppHTTPConfigModel, ctx.config, self.config_prefix)
-        self.ctx.logger.debug(f"Initialized {self.__class__.__name__} "
-                              f"parameters:\n{self.config.model_dump_json(indent=4)}")
+        self.ctx.logger.info(f"Initialized {self.__class__.__name__}")
 
 
 def main():
@@ -38,12 +35,12 @@ def main():
     facade = ctx.facade
     fast_api_reference: FastAPI = facade.http_router.api
     app: SampleAppHTTP = facade.app
-    config:SampleAppHTTPConfigModel = app.config
+    config: SampleAppHTTPConfigModel = app.config
 
     if not isinstance(fast_api_reference, FastAPI):
         raise TypeError(f"Expected instance of FastAPI, got {type(fast_api_reference)}")
 
-    uvicorn.run(fast_api_reference, host=app.config.uvicorn_host, port=app.config.uvicorn_port)
+    uvicorn.run(fast_api_reference, host=config.uvicorn_host, port=config.uvicorn_port)
 
 
 if __name__ == "__main__":

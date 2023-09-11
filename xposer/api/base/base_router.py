@@ -11,5 +11,5 @@ class BaseRouter:
     def __init__(self, ctx: Context):
         self.ctx = ctx
 
-    def init_router(self, *args, **kwargs) -> APIRouter:
+    def start_router(self, *args, **kwargs) -> APIRouter:
         raise NotImplementedError("Subclasses must implement this method to define their router")
