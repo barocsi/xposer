@@ -1,14 +1,14 @@
 # boot and facade
-facade_module_name: "xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http_facade"
-facade_class_name: "SampleAppHttpFacade"
-highlevel_variable: "passed"
+xp_facade_module_name: "xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http_facade"
+xp_facade_class_name: "SampleAppHttpFacade"
+xp_highlevel_variable: "passed"
 
 # Logging
-log_to_console_enabled: "true"
-log_to_console_loglevel: "DEBUG"
-log_to_kafka_enabled: "true"
-log_to_kafka_server_string: "0.0.0.0:9092"
+xp_log_to_console_enabled: "true"
+xp_log_to_console_loglevel: "DEBUG"
+xp_log_to_kafka_enabled: "true"
+xp_log_to_kafka_server_string: "0.0.0.0:9092"
 
 # App level config
-app_fast_bar: "baz"
-app_fast_logic_param_to_override: "not_jens"
+xp_app_fast_bar: "baz"
+xp_app_fast_logic_param_to_override: "not_jens"

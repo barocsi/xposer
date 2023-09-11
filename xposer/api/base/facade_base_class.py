@@ -1,43 +1,31 @@
-from typing import Any
+from typing import Any, Union
+
+from pydantic import BaseModel
 
 from xposer.api.base.base_fastapi_router import BaseFastApiRouter
 from xposer.api.base.base_kafka_router import BaseKafkaRouter
-from xposer.api.base.base_kafka_router_config_model import BaseKafkaRouterConfigModel
 from xposer.core.abstract_facade import AbstractFacade
-from xposer.core.configure import Configurator
 from xposer.core.context import Context
 
 
 class FacadeBaseClass(AbstractFacade):
     name: str = "FacadeBaseClass"
-    config: BaseKafkaRouterConfigModel | Any = None
-    config_prefix: str = ''
+    config: Any = None
+    config_prefix: str = 'xp_facade_'
     kafka_router: BaseKafkaRouter | Any = None
     socket_router: Any = None
     http_router: BaseFastApiRouter = None
+    facade_conf_class:BaseModel
 
     def __init__(self, ctx: Context):
         super().__init__(ctx)
-        self.mergeConfigurationFromPrefix()
+        self.config = self.mergeConfigurationFromPrefix()
         self.initializeAppsBeforeRouters()
         self.initializeRouters()
 
-    def constructConfigModel(self) -> BaseKafkaRouterConfigModel:
-        return self.config.model_construct(_validate=False)
-
-    def mergeConfigurationFromPrefix(self):
-        worker_config_defaults = self.constructConfigModel()
-        # Merge default parameters from global config
-        worker_config_merged = Configurator.mergePrefixedAttributes(worker_config_defaults,
-                                                                    self.ctx.config,
-                                                                    '')
-        # Merge facade specific configuration parameters
-        worker_config_prefix_merged = Configurator.mergePrefixedAttributes(worker_config_merged,
-                                                                           self.ctx.config,
-                                                                           self.config_prefix)
-        worker_config_prefix_merged.model_validate(worker_config_prefix_merged)
-        self.config = worker_config_prefix_merged
-
+    def mergeConfigurationFromPrefix(self) -> BaseModel:
+        return BaseModel.model_construct()
+    
     def initializeAppsBeforeRouters(self):
         raise NotImplementedError
 

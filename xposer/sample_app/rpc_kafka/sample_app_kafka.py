@@ -1,4 +1,5 @@
 import json
+from dataclasses import Field
 from typing import Any
 
 from pydantic_settings import BaseSettings
@@ -9,20 +10,19 @@ from xposer.core.context import Context
 
 
 class SampleAppKafkaConfigModel(BaseSettings):
-    logic_param: str = "some_app_param"
-    logic_param_to_override: str = " jens"
+    logic_param: str = Field(default="logic_param_example_default_value")
+    logic_param_to_override: str = Field(default="not_ovverridden")
 
 
 class SampleAppKafka:
     ctx: Context
     config: SampleAppKafkaConfigModel
+    config_prefix: str = "xp_app_internal"
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
-        app_config_defaults = SampleAppKafkaConfigModel.model_construct(_validate=False)
-        app_config_merged = Configurator.mergePrefixedAttributes(app_config_defaults, ctx.config, 'app_kafka_logic_')
-        app_config_merged.model_validate(app_config_merged)
-        self.config = app_config_merged
+        self.config = Configurator.mergeAttributesWithPrefix(SampleAppKafkaConfigModel, ctx.config,
+                                                             self.config_prefix)
         self.ctx.logger.debug(f"Initialized {self.__class__.__name__} "
                               f"with configuration parameters:\n{self.config.model_dump_json(indent=4)}")
 

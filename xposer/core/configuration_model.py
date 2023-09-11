@@ -1,7 +1,7 @@
 import logging
 
 from pydantic import ConfigDict, Field, field_validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class ConfigModel(BaseSettings):
@@ -25,10 +25,14 @@ class ConfigModel(BaseSettings):
                                                error_messages={
                                                    'type_error': 'The host must be string.'
                                                })
-    domain_facade_id: str = Field('default',
-                                  error_messages={
-                                      'type_error': 'The host must be string.'
-                                  })
+    facade_module_name: str | None = Field(...,
+                                           error_messages={
+                                               'type_error': 'The host must be string.'
+                                           })
+    facade_class_name: str | None = Field(...,
+                                          error_messages={
+                                              'type_error': 'The host must be string.'
+                                          })
 
     model_config = ConfigDict(extra='allow')
 

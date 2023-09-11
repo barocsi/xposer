@@ -2,8 +2,7 @@
 
 ### Start
 
-python -m xposer.sample_app.rpc_kafka.app --config=xposer/sample_app/rp
-c_kafka/config.yaml
+python -m xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http --config=xposer/sample_app/http_post_uvicorn_fastapi/sample_app_http_config.yaml
 
 ### Requirements
 

@@ -9,7 +9,7 @@ class BaseKafkaRouterConfigModel(BaseSettings):
                                              description="Default topicname the router should publish results to")
     router_kafka_exception_topic: str = Field(default="router_exception",
                                               description="Default topicname the router should throw exceptions")
-    router_kafka_server_string: str = "localhost:9092"
-    router_kafka_group_id: str = "routers"
+    router_kafka_server_string: str = Field(default="localhost:9092")
+    router_kafka_group_id: str = Field(default="routers")
 
     model_config = ConfigDict(extra='allow')

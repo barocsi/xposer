@@ -1,10 +1,14 @@
 from abc import ABC, abstractmethod
+from typing import Generic, Type, TypeVar
 
 from xposer.core.context import Context
 
+T = TypeVar('T')
 
-class AbstractFacade(ABC):
+
+class AbstractFacade(ABC, Generic[T]):
     _ctx: Context
+    facade_conf_class: Type[T]
 
     @property
     @abstractmethod
@@ -29,8 +33,8 @@ class AbstractFacade(ABC):
         pass
 
     @abstractmethod
-    def constructConfigModel(self):
-        pass
+    def mergeConfigurationFromPrefix(self) -> T:
+        ...
 
     @abstractmethod
     def afterInititalization(self):

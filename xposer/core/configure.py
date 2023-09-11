@@ -1,23 +1,140 @@
 import argparse
 import os
+from typing import Any, Type, TypeVar
+from typing import Dict, Optional, Union
 
 import yaml
 from pydantic import BaseModel
+from pydantic_settings import BaseSettings
 
 from xposer.core.configuration_model import ConfigModel
+
+T = TypeVar('T')
 
 
 class Configurator:
 
     @staticmethod
-    def mergePrefixedAttributes(target: BaseModel, source: BaseModel, prefix: str = ''):
-        target_dict = target.model_dump()
-        source_dict = source.model_dump()
-        for key in target_dict.keys():
-            prefixed_key = f"{prefix}{key}"
-            if prefixed_key in source_dict:
-                target_dict[key] = source_dict[prefixed_key]
-        return target.__class__(**target_dict)
+    def shallow_dict_from_object_with_prefix_removal(source: Union[BaseModel, BaseSettings, Dict[str, Any]],
+                                                     prefix: str) -> Dict[str, Any]:
+        if isinstance(source, (BaseModel, BaseSettings)):
+            source_data = source.model_dump()
+        elif isinstance(source, dict):
+            source_data = source
+        else:
+            raise ValueError(
+                "source must be either a BaseModel-derived instance, BaseSettings-derived instance, or a dictionary.")
+
+        return {key[len(prefix):]: value for key, value in source_data.items() if key.startswith(prefix)}
+
+    @staticmethod
+    def prefilled_dict_from_class_and_object(target_cls: Union[Type[BaseModel], Type[BaseSettings], Dict[str, Any]],
+                                             source_obj: Optional[
+                                                 Union[BaseModel, BaseSettings, Dict[str, Any]]] = None,
+                                             strict: bool = False) -> Dict[str, Any]:
+        if issubclass(target_cls, (BaseModel, BaseSettings)):
+            shallow_target_dict = {k: v.get_default() for k, v in
+                                   target_cls.model_fields.items()}
+        elif isinstance(target_cls, dict):
+            shallow_target_dict = target_cls
+        else:
+            raise ValueError(
+                "target_cls must be either a BaseModel-derived class, BaseSettings-derived class, or a dictionary.")
+
+        if source_obj:
+            if isinstance(source_obj, (BaseModel, BaseSettings)):
+                source_data = source_obj.model_dump()
+            elif isinstance(source_obj, dict):
+                source_data = source_obj
+            else:
+                raise ValueError("source_obj must be either a BaseModel-derived instance or a dictionary.")
+
+            for key, value in source_data.items():
+                if strict:
+                    if key in shallow_target_dict:
+                        shallow_target_dict[key] = value
+                else:
+                    shallow_target_dict[key] = value
+
+        return shallow_target_dict
+
+    @staticmethod
+    def prefilled_dict_from_object_and_object(target_obj: Union[BaseModel, Dict[str, Any]],
+                                              source_obj:
+                                              Union[BaseModel, BaseSettings, Dict[str, Any]] = None,
+                                              strict: bool = False) -> Dict[str, Any]:
+        if isinstance(target_obj, (BaseModel, BaseSettings)):
+            shallow_target_dict = {k: v.get_default() for k, v in
+                                   target_obj.model_fields.items()}
+            for k in shallow_target_dict:
+                shallow_target_dict[k] = getattr(target_obj, k, None)
+            for k, v in target_obj.model_extra.items():
+                shallow_target_dict[k] = v
+
+        elif isinstance(target_obj, dict):
+            shallow_target_dict = target_obj
+        else:
+            raise ValueError(
+                "target_cls must be either a BaseModel-derived class instance, BaseSettings-derived class instance, or a dictionary instance.")
+
+        if isinstance(source_obj, (BaseModel, BaseSettings)):
+            source_data = source_obj.model_dump()
+        elif isinstance(source_obj, dict):
+            source_data = source_obj
+        else:
+            raise ValueError("source_obj must be either a BaseModel-derived instance or a dictionary intance.")
+
+        for key, value in source_data.items():
+            if strict:
+                if key in shallow_target_dict:
+                    shallow_target_dict[key] = value
+            else:
+                shallow_target_dict[key] = value
+
+        return shallow_target_dict
+
+    @staticmethod
+    def mergeAttributesWithPrefix(
+            target: Type[T],
+            source: Union[BaseModel, Dict[str, Any]],
+            prefix: str = '',
+            validate: bool = True,
+            strict: bool = False) -> T:
+
+        source_dict = Configurator.shallow_dict_from_object_with_prefix_removal(source, prefix)
+        result_obj = None
+        # Determine whether the target is a class or an object and get the prefilled dictionary
+        if isinstance(target, type):
+            merged_dict = Configurator.prefilled_dict_from_class_and_object(target, source_dict, strict)
+            if issubclass(target, Dict):
+                result_obj = merged_dict
+            else:
+                result_obj = target(**merged_dict)
+
+        else:
+            merged_dict = Configurator.prefilled_dict_from_object_and_object(target, source_dict, strict)
+            if isinstance(target, Dict):
+                result_obj = type(target)(**merged_dict)
+            else:
+                result_obj = type(target)(**merged_dict)
+
+        # Validate the object if required
+        # Pydantic has a model_validate classmethod, we focus on those cases
+        if validate:
+            if isinstance(target, type):
+                if issubclass(target, Dict):
+                    # dont validate a dict type
+                    pass
+                else:
+                    target.model_validate(result_obj)
+            else:
+                if isinstance(target, Dict):
+                    # dont validate a dict instance
+                    pass
+                elif isinstance(target, (BaseModel, BaseSettings)):
+                    type(target).model_validate(result_obj)
+
+        return result_obj
 
     @staticmethod
     def parseConfig(config_filename):
@@ -41,10 +158,11 @@ class Configurator:
         for field in model_fields:
             parser.add_argument(f"--{field}")
 
-        args = parser.parse_args()
+        args, otherargs = parser.parse_known_args()
 
         # Update model values based on provided arguments
-        for field, value in vars(args).items():
+        argitems = vars(args).items()
+        for field, value in argitems:
             if value is not None and field in model_fields:
                 setattr(model, field, type(model_fields[field])(value))
 
@@ -52,11 +170,24 @@ class Configurator:
 
     @staticmethod
     def buildConfig() -> ConfigModel:
+        ROOT_PREFIX: str = 'xp_'
         # Determine configuration_filename source and value
         parser = argparse.ArgumentParser()
         parser.add_argument("--config",
                             type=str,
                             help="Config file path",
+                            required=False,
+                            default=None
+                            )
+        parser.add_argument("--host",
+                            type=str,
+                            help="Reserved for Uvicorn and others",
+                            required=False,
+                            default=None
+                            )
+        parser.add_argument("--port",
+                            type=str,
+                            help="Reserved for Uvicorn and others",
                             required=False,
                             default=None
                             )
@@ -66,7 +197,7 @@ class Configurator:
             config_filename = os.environ.get("XPOSER_CONFIG")
 
         if config_filename is None:
-            config_filename = "sample_app_http_config.yaml"
+            config_filename = "config.yaml"
 
         if config_filename is None:
             raise EnvironmentError(f"Missing environment variable for building context: {config_filename}")
@@ -75,10 +206,21 @@ class Configurator:
         # Load configuration file
         loaded_and_parsed_config = Configurator.parseConfig(config_filename)
 
-        # Create typed configuration object
-        configuration: ConfigModel = ConfigModel(**loaded_and_parsed_config)
+        # Merge initially loaded values from configuration file
+        config_file_configuration: ConfigModel = Configurator.mergeAttributesWithPrefix(ConfigModel,
+                                                                                        loaded_and_parsed_config,
+                                                                                        ROOT_PREFIX)
 
-        # Update configuration from variables from args
-        configuration = Configurator.updateConfigFromArgs(configuration, parser)
+        # Override configuration from variables from environment
+        environment_overridden_configuration: ConfigModel = Configurator.mergeAttributesWithPrefix(
+            config_file_configuration,
+            {key.lower(): value for key, value
+             in os.environ.items()},
+            ROOT_PREFIX)
 
-        return configuration
+        cli_overridden_configuration = Configurator.updateConfigFromArgs(environment_overridden_configuration, parser)
+
+        # Now do the validation business
+        ConfigModel.model_validate(cli_overridden_configuration)
+
+        return cli_overridden_configuration
