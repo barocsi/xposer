@@ -13,3 +13,6 @@ class BaseRouter:
 
     def start_router(self, *args, **kwargs) -> APIRouter:
         raise NotImplementedError("Subclasses must implement this method to define their router")
+
+    def stop_router(self, *args, **kwargs):
+        raise NotImplementedError("Subclasses must implement this method to define their router")

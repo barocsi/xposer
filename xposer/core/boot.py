@@ -1,4 +1,6 @@
+import asyncio
 import json
+import signal
 
 from xposer.core.configuration_model import ConfigModel
 from xposer.core.configure import Configurator
@@ -8,16 +10,44 @@ from xposer.core.logger import get_logger
 
 
 class Boot:
+    ctx: Context = None
 
-    @staticmethod
-    def boot():
+    async def shutdown(self):
+        self.ctx.logger.info(f"Shutting down application")
+        self.ctx.facade.tearDown()
+        await asyncio.sleep(1)
+        self.ctx.logger.info(f"Shutting down completed")
+
+    def _sync_shutdown_handler(self,a,b):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.shutdown())
+
+
+    def boot(self):
+        # Config management
         config: ConfigModel = Configurator.buildConfig()
+
+        # Logger management
         logger = get_logger(config)
-        config_json_str = config.model_dump_json(indent=4)
+
+        # Context setup
         context = Context(logger, config, {})
+        self.ctx = context
+
+        # Create a facade
         facade = FacadeFactory.make(context)
         context.facade = facade
+
+        # Add graceful shutdown feature
+        # Signal handling setup
+        signals = (signal.SIGTERM, signal.SIGINT)
+        for s in signals:
+            signal.signal(s, self._sync_shutdown_handler)
+
+        # Optional hooking
         facade.afterInititalization()
+
+        # Verbose
         logger.info(f"Boot sequence completed successfully. Facade {facade.name} started")
         logger.debug(f"List of loaded configurations:")
         logger.debug(f"Application level:")

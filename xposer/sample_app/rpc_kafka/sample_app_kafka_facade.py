@@ -1,6 +1,9 @@
+from typing import List
+
 from pydantic import ConfigDict, Field
-import asyncio
+
 from xposer.api.base.base_kafka_router_config_model import BaseKafkaRouterConfigModel
+from xposer.api.base.base_router import BaseRouter
 from xposer.api.base.facade_base_class import FacadeBaseClass
 from xposer.core.configure import Configurator
 from xposer.sample_app.rpc_kafka.sample_app_kafka import SampleAppKafka
@@ -18,6 +21,7 @@ class SampleAppKafkaFacade(FacadeBaseClass):
     config_prefix: str = "xpfacade_"
     app: SampleAppKafka = None
     facade_conf_class: SampleAppKafkaFacadeConfigModel
+    routers: List[BaseRouter] = []
 
     def mergeConfigurationFromPrefix(self) -> SampleAppKafkaFacadeConfigModel:
         return Configurator.mergeAttributesWithPrefix(SampleAppKafkaFacadeConfigModel,
@@ -29,14 +33,15 @@ class SampleAppKafkaFacade(FacadeBaseClass):
 
     def initializeRouters(self):
         self.kafka_router = SampleAppKafkaRouter(self.ctx)
-        asyncio.create_task(self.kafka_router.start_router(app=self.app,
-                                                          server_string=self.config.router_kafka_server_string,
-                                                          group_id=self.config.router_kafka_group_id,
-                                                          inbound_topic=self.config.router_kafka_inbound_topic,
-                                                          outbound_topic=self.config.router_kafka_outbound_topic,
-                                                          exception_topic=self.config.router_kafka_exception_topic,
-                                                          handler_func=self.app.RPCHandler,
-                                                          produce_on_result=True))
+        self.routers.append(self.kafka_router)
+        self.kafka_router.start_router(app=self.app,
+                                       server_string=self.config.router_kafka_server_string,
+                                       group_id=self.config.router_kafka_group_id,
+                                       inbound_topic=self.config.router_kafka_inbound_topic,
+                                       outbound_topic=self.config.router_kafka_outbound_topic,
+                                       exception_topic=self.config.router_kafka_exception_topic,
+                                       handler_func=self.app.RPCHandler,
+                                       produce_on_result=True)
 
     def afterInititalization(self):
         self.ctx.logger.debug(f"Facade starting: {self.__class__.__name__}")

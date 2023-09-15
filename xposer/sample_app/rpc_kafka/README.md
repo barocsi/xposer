@@ -2,8 +2,8 @@
 
 ### Start
 
-python -m xposer.sample_app.rpc_kafka.app --config=xposer/sample_app/rp
-c_kafka/config.yaml
+source env/bin/activate
+python -m xposer.sample_app.rpc_kafka.sample_app_kafka --config=xposer/sample_app/rpc_kafka/sample_app_kafka_config.yaml
 
 ### Will accept json on router_inbound topic (or topic defined in the config.yaml)
 

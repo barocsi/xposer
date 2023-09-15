@@ -34,7 +34,7 @@ class SampleAppKafka:
 
 def main():
     # Load and boot facade
-    Boot.boot()
+    boot_manager = Boot().boot()
 
 
 if __name__ == "__main__":
