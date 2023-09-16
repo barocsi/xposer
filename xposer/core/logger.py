@@ -1,9 +1,26 @@
+import inspect
 import logging
 
 from confluent_kafka import Producer
 
 from xposer.core.configuration_model import ConfigModel
 
+
+class CustomLogger(logging.Logger):
+    def makeRecord(self, *args, **kwargs):
+        record = super().makeRecord(*args, **kwargs)
+        record.classname = 'UNKNOWN'
+
+        frames = inspect.stack()
+        for frame in frames:
+            instance = frame[0].f_locals.get('self')
+            if instance:
+                record.classname = instance.__class__.__name__
+                break
+
+        return record
+
+logging.setLoggerClass(CustomLogger)
 
 class KafkaLoggingHandler(logging.Handler):
     def __init__(self, kafka_producer, topic_map):
@@ -25,13 +42,12 @@ def get_logger(appConfig: ConfigModel):
     if appConfig.log_to_console_enabled:
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.DEBUG)
-        console_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        console_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(classname)s] -  %(message)s')
         console_handler.setFormatter(console_formatter)
         logger.addHandler(console_handler)
 
     # Kafka Handler
     if appConfig.log_to_kafka_enabled:
-        print(appConfig.log_to_kafka_server_string)
         kafka_config = {
             'bootstrap.servers': appConfig.log_to_kafka_server_string
         }

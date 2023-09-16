@@ -55,6 +55,8 @@ so your app_config_merged will contain `custom_param = 'foobar'`
 A Facade is a small component that is called (based on the configuration parameters) and is responsible to initialize your application logic.
 The facade must be implemented by the developer using the following implementations:
 
+## Docker
+
 
 ## Examples in sample_app folder
 

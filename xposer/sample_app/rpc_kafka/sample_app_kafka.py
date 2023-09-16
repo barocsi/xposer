@@ -1,3 +1,4 @@
+import asyncio
 import json
 from typing import Any
 
@@ -11,7 +12,7 @@ from xposer.core.context import Context
 
 class SampleAppKafkaConfigModel(BaseSettings):
     logic_param: str = Field(default="logic_param_example_default_value")
-    logic_param_to_override: str = Field(default="not_ovverridden")
+    logic_param_to_override: str = Field(default="not_overridden")
 
 
 class SampleAppKafka:
@@ -23,8 +24,11 @@ class SampleAppKafka:
         self.ctx = ctx
         self.config = Configurator.mergeAttributesWithPrefix(SampleAppKafkaConfigModel,
                                                              ctx.config,
-                                                             self.config_prefix)
-        self.ctx.logger.info(f"Initialized {self.__class__.__name__}")
+                                                             self.config_prefix,
+                                                             validate=True,
+                                                             strict=True
+                                                             )
+        self.ctx.logger.info(f"Initialized application")
 
     def RPCHandler(self, data: Any):
         self.ctx.logger.info(
@@ -32,9 +36,13 @@ class SampleAppKafka:
         return json.dumps({"result": "whoa", "originalfoo": data.get('foo', 'None')})
 
 
+async def main_sequence():
+    boot = Boot()
+    await boot.boot()
+
 def main():
-    # Load and boot facade
-    boot_manager = Boot().boot()
+    loop = asyncio.get_event_loop()
+    loop.create_task(main_sequence())
 
 
 if __name__ == "__main__":

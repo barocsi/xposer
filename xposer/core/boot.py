@@ -1,5 +1,4 @@
 import asyncio
-import json
 import signal
 
 from xposer.core.configuration_model import ConfigModel
@@ -8,22 +7,23 @@ from xposer.core.context import Context
 from xposer.core.facade_factory import FacadeFactory
 from xposer.core.logger import get_logger
 
-
 class Boot:
-    ctx: Context = None
+    def __init__(self):
+        self.ctx: Context = None
+        self.shutdown_event = asyncio.Event()  # Shutdown event
 
     async def shutdown(self):
         self.ctx.logger.info(f"Shutting down application")
         self.ctx.facade.tearDown()
         await asyncio.sleep(1)
         self.ctx.logger.info(f"Shutting down completed")
+        self.shutdown_event.set()  # Set the shutdown event
 
-    def _sync_shutdown_handler(self,a,b):
+    def _sync_shutdown_handler(self, a, b):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.shutdown())
 
-
-    def boot(self):
+    async def boot(self):
         # Config management
         config: ConfigModel = Configurator.buildConfig()
 
@@ -36,6 +36,8 @@ class Boot:
 
         # Create a facade
         facade = FacadeFactory.make(context)
+        await facade.asyncInit()
+        asyncio.create_task(facade.startServices())
         context.facade = facade
 
         # Add graceful shutdown feature
@@ -44,12 +46,15 @@ class Boot:
         for s in signals:
             signal.signal(s, self._sync_shutdown_handler)
 
-        # Optional hooking
-        facade.afterInititalization()
-
         # Verbose
         logger.info(f"Boot sequence completed successfully. Facade {facade.name} started")
         logger.debug(f"List of loaded configurations:")
+        logger.debug(f"Facade level:")
+        logger.debug(context.facade.config.model_dump_json(indent=4))
         logger.debug(f"Application level:")
-        logger.debug(json.dumps(context.config.model_dump()))
+        logger.debug(context.facade.app.config.model_dump_json(indent=4))
+
+        # Wait for the shutdown event to be set
+        await self.shutdown_event.wait()
+
         return context

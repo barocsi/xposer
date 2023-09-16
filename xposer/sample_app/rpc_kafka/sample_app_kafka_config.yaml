@@ -16,4 +16,4 @@ xpfacade_kafka_group_id: "router"
 xpfacade_kafka_bar: "baz"
 
 # App Sub config
-xpapp_kafka_logic_param_to_override: "not_jens"
+xpapp_logic_param_to_override: "not_jens"

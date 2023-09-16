@@ -3,7 +3,7 @@ version: '3'
 services:
   barocsi_xpose_http:
     build: .
-    image: barocsi/xposer:alpha
+    image: barocsi/xposer:latest
     pull_policy: never
     environment:
       - LOG_TO_KAFKA_SERVER_STRING=host.docker.internal:9092

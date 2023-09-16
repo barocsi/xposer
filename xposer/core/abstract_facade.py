@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Generic, List, Type, TypeVar
+from typing import Generic, Type, TypeVar
 
-from xposer.api.base.base_router import BaseRouter
 from xposer.core.context import Context
 
 T = TypeVar('T')
@@ -33,13 +32,17 @@ class AbstractFacade(ABC, Generic[T]):
         pass
 
     @abstractmethod
+    async def asyncInit(self):
+        ...
+
+    @abstractmethod
+    async def startServices(self):
+        ...
+
+    @abstractmethod
     def mergeConfigurationFromPrefix(self) -> T:
         ...
 
     @abstractmethod
-    def afterInititalization(self):
-        pass
-
-    @abstractmethod
-    def tearDown(self):
+    async def tearDownFacade(self):
         pass

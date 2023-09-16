@@ -1,37 +1,30 @@
 import logging
 
 from pydantic import ConfigDict, Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 
 class ConfigModel(BaseSettings):
-    log_to_console_enabled: bool = Field(True,
+    log_to_console_enabled: bool = Field(default=True,
                                          error_messages={
-                                             'type_error': 'The host must be boolean.'
                                          })
     log_to_console_loglevel: int | str = Field(logging.DEBUG,
                                                error_messages={
-                                                   'type_error': 'The host must be int.'
                                                })
-    log_to_kafka_enabled: bool = Field(True,
+    log_to_kafka_enabled: bool = Field(default=True,
                                        error_messages={
-                                           'type_error': 'The host must be boolean.'
                                        })
     log_to_kafka_server_string: str = Field('localhost:9092',
                                             error_messages={
-                                                'type_error': 'The host must be string.'
                                             })
     log_to_kafka_server_log_topic: str = Field('log',
                                                error_messages={
-                                                   'type_error': 'The host must be string.'
                                                })
     facade_module_name: str | None = Field(...,
                                            error_messages={
-                                               'type_error': 'The host must be string.'
                                            })
     facade_class_name: str | None = Field(...,
                                           error_messages={
-                                              'type_error': 'The host must be string.'
                                           })
 
     model_config = ConfigDict(extra='allow')

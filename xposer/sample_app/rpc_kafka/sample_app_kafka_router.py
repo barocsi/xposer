@@ -1,5 +1,5 @@
-from xposer.api.base.base_kafka_router import BaseKafkaRouter
+from xposer.api.base.base_kafka_router import BaseKafkaService
 
 
-class SampleAppKafkaRouter(BaseKafkaRouter):
+class SampleAppKafkaRouter(BaseKafkaService):
     ...

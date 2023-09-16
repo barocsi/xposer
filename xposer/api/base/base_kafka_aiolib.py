@@ -2,25 +2,23 @@ import asyncio
 import json
 from typing import List
 
-from confluent_kafka import Consumer, Producer, KafkaException
-from threading import Event, Thread
+from confluent_kafka import Consumer, KafkaException, Producer
+
 
 class AIOProducer:
     def __init__(self, configs, loop=None):
         self._loop = loop or asyncio.get_event_loop()
         self._producer = Producer(configs)
         self._cancelled = False
-        self._poll_thread = Thread(target=self._poll_loop)
-        self._poll_thread.start()
 
-    def _poll_loop(self):
+    async def _poll_loop(self):
         while not self._cancelled:
             self._producer.poll(0.1)
+            await asyncio.sleep(0.1)
 
     def close(self):
         self._cancelled = True
         self._producer.flush()
-        self._poll_thread.join()
 
     async def produce(self, topic, value):
         result = self._loop.create_future()
@@ -37,30 +35,26 @@ class AIOProducer:
 
 
 class AIOConsumer:
-    def __init__(self, configs, handler_func, inbound_topics:List[str], loop=None):
+    def __init__(self, configs, handler_func, inbound_topics: List[str], loop=None):
         self._loop = loop or asyncio.get_event_loop()
         self._consumer = Consumer(configs)
         self._consumer.subscribe(inbound_topics)
         self._handler_func = handler_func
         self._cancelled = False
-        self._poll_thread = Thread(target=self._consume_loop)
-        self._poll_thread.start()
 
-    def _handle_and_commit(self, msg):
+    async def _handle_and_commit(self, msg):
         if msg.value():
             data = json.loads(msg.value().decode('utf-8'))
         else:
-            raise Exception(f"Missing value from the message",msg)
-        self._handler_func(data)
+            raise Exception(f"Missing value from the message", msg)
+        await self._handler_func(data)
         self._consumer.commit(message=msg)
 
-    def _consume_loop(self):
+    async def _consume_loop(self):
         while not self._cancelled:
             msg = self._consumer.poll(0.1)
             if msg:
-                print(msg)
-                self._loop.call_soon_threadsafe(self._handle_and_commit, msg)
+                await self._handle_and_commit(msg)
 
     def close(self):
         self._cancelled = True
-        self._poll_thread.join()

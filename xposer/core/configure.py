@@ -13,19 +13,43 @@ T = TypeVar('T')
 
 
 class Configurator:
+    """
+    @
+    FUNCTION: shallow_dict_from_object_with_prefix_removal
+    DESCRIPTION:
+        This function transforms a given object (or dictionary) by retaining only the keys that start with a specified prefix.
+        The prefix is then removed from the key in the resultant dictionary.
+        If `strict` is set to False, keys that do not match the prefix will also be included in the returned dictionary.
+
+    PARAMETERS:
+        source: Union[Any, Dict[str, Any]] - The source object or dictionary to be transformed.
+        prefix: str (default='') - The prefix to check against each key.
+        strict: bool (default=False) - If set to True, only keys with the specified prefix will be included.
+
+    RETURNS: Dict[str, Any] - A dictionary derived from the source object/dictionary after applying the specified transformations.
+    @
+    """
 
     @staticmethod
-    def shallow_dict_from_object_with_prefix_removal(source: Union[BaseModel, BaseSettings, Dict[str, Any]],
-                                                     prefix: str) -> Dict[str, Any]:
-        if isinstance(source, (BaseModel, BaseSettings)):
-            source_data = source.model_dump()
+    def shallow_dict_from_object_with_prefix_removal(source: Union[Any, Dict[str, Any]],
+                                                     prefix: str = '',
+                                                     strict: bool = False) -> Dict[str, Any]:
+
+        if hasattr(source, 'dict'):
+            source_data = source.dict()
         elif isinstance(source, dict):
             source_data = source
         else:
-            raise ValueError(
-                "source must be either a BaseModel-derived instance, BaseSettings-derived instance, or a dictionary.")
+            raise ValueError("source must be an instance with a dict() method or a dictionary.")
 
-        return {key[len(prefix):]: value for key, value in source_data.items() if key.startswith(prefix)}
+        output = {}
+        for key, value in source_data.items():
+            if key.startswith(prefix):
+                output[key[len(prefix):]] = value
+            elif not strict:
+                output[key] = value
+
+        return output
 
     @staticmethod
     def prefilled_dict_from_class_and_object(target_cls: Union[Type[BaseModel], Type[BaseSettings], Dict[str, Any]],
@@ -99,9 +123,9 @@ class Configurator:
             source: Union[BaseModel, Dict[str, Any]],
             prefix: str = '',
             validate: bool = True,
-            strict: bool = False) -> T:
+            strict: bool = True) -> T:
 
-        source_dict = Configurator.shallow_dict_from_object_with_prefix_removal(source, prefix)
+        source_dict = Configurator.shallow_dict_from_object_with_prefix_removal(source, prefix, strict=False)
         result_obj = None
         # Determine whether the target is a class or an object and get the prefilled dictionary
         if isinstance(target, type):
@@ -109,14 +133,14 @@ class Configurator:
             if issubclass(target, Dict):
                 result_obj = merged_dict
             else:
-                result_obj = target(**merged_dict)
+                result_obj = target.model_construct(**merged_dict)
 
         else:
             merged_dict = Configurator.prefilled_dict_from_object_and_object(target, source_dict, strict)
             if isinstance(target, Dict):
                 result_obj = type(target)(**merged_dict)
             else:
-                result_obj = type(target)(**merged_dict)
+                result_obj = type(target).model_construct(**merged_dict)
 
         # Validate the object if required
         # Pydantic has a model_validate classmethod, we focus on those cases
@@ -197,14 +221,18 @@ class Configurator:
         # Merge initially loaded values from configuration file
         config_file_configuration: ConfigModel = Configurator.mergeAttributesWithPrefix(ConfigModel,
                                                                                         loaded_and_parsed_config,
-                                                                                        ROOT_PREFIX)
+                                                                                        ROOT_PREFIX,
+                                                                                        validate=False,
+                                                                                        strict=False)
 
         # Override configuration from variables from environment
         environment_overridden_configuration: ConfigModel = Configurator.mergeAttributesWithPrefix(
             config_file_configuration,
             {key.lower(): value for key, value
              in os.environ.items()},
-            ROOT_PREFIX)
+            ROOT_PREFIX,
+            validate=False,
+            strict=False)
 
         cli_args_with_prefix = Configurator.getVarsFromCLIArgs(parser)
 
@@ -212,7 +240,9 @@ class Configurator:
         cli_overridden_configuration: ConfigModel = Configurator.mergeAttributesWithPrefix(
             environment_overridden_configuration,
             cli_args_with_prefix,
-            ROOT_PREFIX)
+            ROOT_PREFIX,
+            validate=False,
+            strict=False)
 
         # Now do the validation business
         ConfigModel.model_validate(cli_overridden_configuration)
