@@ -6,7 +6,7 @@ from typing import Any, List
 from pydantic import BaseModel
 
 from xposer.api.base.base_fastapi_service import BaseFastApiService
-from xposer.api.base.base_kafka_router import BaseKafkaService
+from xposer.api.base.base_kafka_service import BaseKafkaService
 from xposer.api.base.base_service import BaseService
 from xposer.core.abstract_facade import AbstractFacade
 from xposer.core.context import Context

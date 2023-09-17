@@ -2,7 +2,7 @@ from pydantic import ConfigDict, Field
 from pydantic_settings import BaseSettings
 
 
-class BaseKafkaRouterConfigModel(BaseSettings):
+class BaseKafkaServiceConfigModel(BaseSettings):
     router_kafka_inbound_topic: str = Field(default="router_inbound",
                                             description="Default topicname the router should listen to")
     router_kafka_outbound_topic: str = Field(default="router_outbound",

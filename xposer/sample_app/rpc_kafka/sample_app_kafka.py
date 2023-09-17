@@ -30,20 +30,19 @@ class SampleAppKafka:
                                                              )
         self.ctx.logger.info(f"Initialized application")
 
-    def RPCHandler(self, data: Any):
+    async def RPCHandler(self, data: Any):
         self.ctx.logger.info(
             f"Sample call with correlation id:{data.get('correlation_id', 'None')} receives sample raw data:\n{json.dumps(data, indent=4)}")
         return json.dumps({"result": "whoa", "originalfoo": data.get('foo', 'None')})
 
 
-async def main_sequence():
-    boot = Boot()
-    await boot.boot()
-
-def main():
-    loop = asyncio.get_event_loop()
-    loop.create_task(main_sequence())
+async def main():
+    await Boot().boot()
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except RuntimeError as e:
+        if str(e) != 'Event loop stopped before Future completed.':
+            raise

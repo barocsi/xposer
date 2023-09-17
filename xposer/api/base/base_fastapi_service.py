@@ -1,9 +1,19 @@
+import logging
 from typing import List
 
 import uvicorn
 from fastapi import APIRouter, FastAPI
+from uvicorn.config import LOGGING_CONFIG
 
 from xposer.api.base.base_service import BaseService
+
+LOGGING_CONFIG["loggers"]["uvicorn"]["handlers"] = ["default"]
+LOGGING_CONFIG["loggers"]["uvicorn.access"]["handlers"] = ["default"]
+LOGGING_CONFIG["loggers"]["uvicorn.error"]["handlers"] = ["default"]
+LOGGING_CONFIG["loggers"]["xpose_logger"] = {
+    "handlers": ["default"],
+    "level": "DEBUG",
+}
 
 
 class Context:
@@ -32,6 +42,18 @@ class BaseFastApiService(BaseService):
             if callback:
                 callback(None)
 
-        config = uvicorn.Config(app=self.fastApi, host=host, port=port, log_level="info")
+        xpose_logger = self.ctx.logger
+
+        for uvicorn_logger_name in ["uvicorn", "uvicorn.error"]:
+            uvicorn_specific_logger = logging.getLogger(uvicorn_logger_name)
+            uvicorn_specific_logger.handlers = xpose_logger.handlers
+            uvicorn_specific_logger.propagate = False
+
+        config = uvicorn.Config(app=self.fastApi,
+                                host=host,
+                                port=port,
+                                log_level="info",
+                                log_config=None
+                                )
         server = uvicorn.Server(config)
         await server.serve()

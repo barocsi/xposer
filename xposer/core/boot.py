@@ -6,7 +6,7 @@ from xposer.core.configure import Configurator
 from xposer.core.context import Context
 from xposer.core.facade_factory import FacadeFactory
 from xposer.core.logger import get_logger
-
+import sys
 class Boot:
     def __init__(self):
         self.ctx: Context = None
@@ -22,6 +22,15 @@ class Boot:
     def _sync_shutdown_handler(self, a, b):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.shutdown())
+
+    def handle_task_exception(self,loop, context):
+        task = context.get('future')
+        if task:
+            exception = task.exception()
+            if exception:
+                print(f"Task failed with: {exception}")
+                loop.stop()
+
 
     async def boot(self):
         # Config management
@@ -45,6 +54,9 @@ class Boot:
         signals = (signal.SIGTERM, signal.SIGINT)
         for s in signals:
             signal.signal(s, self._sync_shutdown_handler)
+
+        # Exceptions (global handling)
+        asyncio.get_event_loop().set_exception_handler(self.handle_task_exception)
 
         # Verbose
         logger.info(f"Boot sequence completed successfully. Facade {facade.name} started")

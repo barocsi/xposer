@@ -48,7 +48,6 @@ class SampleAppHttpFacade(FacadeBaseClass):
             api_prefix=self.api_prefix,
             callback=future.set_result))
 
-        # Wait for the callback to be called (i.e., for the FastAPI server to start)
         task = asyncio.create_task(asyncio.wait_for(future, timeout=30))
         task.add_done_callback(self.handle_task_exception)
 

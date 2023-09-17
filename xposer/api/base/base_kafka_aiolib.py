@@ -10,6 +10,7 @@ class AIOProducer:
         self._loop = loop or asyncio.get_event_loop()
         self._producer = Producer(configs)
         self._cancelled = False
+        self._poll_task = self._loop.create_task(self._poll_loop())
 
     async def _poll_loop(self):
         while not self._cancelled:
@@ -19,15 +20,18 @@ class AIOProducer:
     def close(self):
         self._cancelled = True
         self._producer.flush()
+        if self._poll_task:  # Ensure the task is available before trying to cancel
+            self._poll_task.cancel()
+            self._producer.flush()
 
     async def produce(self, topic, value):
         result = self._loop.create_future()
 
         def ack(err, msg):
             if err:
-                self._loop.call_soon_threadsafe(result.set_exception, KafkaException(err))
+                result.set_exception(KafkaException(err))
             else:
-                self._loop.call_soon_threadsafe(result.set_result, msg)
+                result.set_result(msg)
 
         self._producer.produce(topic, value, on_delivery=ack)
 
@@ -39,6 +43,7 @@ class AIOConsumer:
         self._loop = loop or asyncio.get_event_loop()
         self._consumer = Consumer(configs)
         self._consumer.subscribe(inbound_topics)
+        self._consume_task = self._loop.create_task(self._consume_loop())
         self._handler_func = handler_func
         self._cancelled = False
 
@@ -48,6 +53,7 @@ class AIOConsumer:
         else:
             raise Exception(f"Missing value from the message", msg)
         await self._handler_func(data)
+        print('committed')
         self._consumer.commit(message=msg)
 
     async def _consume_loop(self):
@@ -58,3 +64,5 @@ class AIOConsumer:
 
     def close(self):
         self._cancelled = True
+        if self._consume_task:  # Ensure the task is available before trying to cancel
+            self._consume_task.cancel()

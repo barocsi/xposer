@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import json
 from typing import Any, Callable
 
@@ -17,9 +18,13 @@ class BaseKafkaService(BaseService):
                            outbound_topic: str,
                            exception_topic: str,
                            handler_func: Callable = None,
-                           produce_on_result: bool = False):
+                           produce_on_result: bool = False,
+                           callback=None):
 
         self._cancelled = False
+
+        if not inspect.iscoroutinefunction(handler_func):
+            raise TypeError("handler_func must be an asynchronous coroutine function")
 
         consumer_config = {
             'bootstrap.servers': server_string,
@@ -38,7 +43,8 @@ class BaseKafkaService(BaseService):
         async def consumer_handler_func(data):
             correlation_id = data.get('correlation_id', 'N/A')
             try:
-                processed_data = handler_func(data)
+                # The handler funct must be awaited (transactional)
+                processed_data = await handler_func(data)
                 response = {
                     'result': processed_data,
                     'correlation_id': correlation_id

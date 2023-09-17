@@ -5,8 +5,7 @@ from confluent_kafka import Producer
 
 from xposer.core.configuration_model import ConfigModel
 
-
-class CustomLogger(logging.Logger):
+class XposeLogger(logging.Logger):
     def makeRecord(self, *args, **kwargs):
         record = super().makeRecord(*args, **kwargs)
         record.classname = 'UNKNOWN'
@@ -20,7 +19,9 @@ class CustomLogger(logging.Logger):
 
         return record
 
-logging.setLoggerClass(CustomLogger)
+
+logging.setLoggerClass(XposeLogger)
+
 
 class KafkaLoggingHandler(logging.Handler):
     def __init__(self, kafka_producer, topic_map):
@@ -35,9 +36,9 @@ class KafkaLoggingHandler(logging.Handler):
 
 
 def get_logger(appConfig: ConfigModel):
-    logger = logging.getLogger(__name__)
+    logger_name = "xpose_logger"
+    logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
-
     # Console Handler
     if appConfig.log_to_console_enabled:
         console_handler = logging.StreamHandler()

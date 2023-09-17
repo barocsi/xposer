@@ -1,19 +1,30 @@
 import asyncio
+import logging
+from time import sleep
 
-def getnamefromuri():
-    # ... your sync function: httploaduri ...
-    return result
+from xposer.api.base.xpose_task import XPTask
 
-async def wrap_in_asyncio(callback):
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, getnamefromuri)
-    callback(result)
 
-def my_callback(result):
-    print(f"Received result: {result}")
+# Assuming the AIOTaskHelper class is defined above...
 
-# To use
+async def sample_coroutine(argfoo):
+    print("Starting coroutine:", argfoo)
+    await asyncio.sleep(2)
+    raise ValueError("Sample error in coroutine!")  # Raise an error to test our exception handling
+
 async def main():
-    await wrap_in_asyncio(my_callback)
+    # Setup logging
+    logging.basicConfig(level=logging.ERROR)
+
+    # Create an AIOTaskHelper instance
+    xp_task = XPTask().create_task(
+        sample_coroutine('foo'),
+        lambda context, exception: print(f"[Callback] Error in {context.task_type}: {exception}. Captured value: foobar"),
+        None,
+        'foobar')
+    # Run the tasks for the sake of the example
+    await asyncio.gather(xp_task, return_exceptions=True)
+    sleep(1)
+
 
 asyncio.run(main())
