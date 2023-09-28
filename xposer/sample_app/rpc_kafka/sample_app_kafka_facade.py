@@ -53,8 +53,7 @@ class SampleAppKafkaFacade(FacadeBaseClass):
             ...
             # raise ValueError("The service did not start within 30 seconds!")
 
-    async def startFacadeServices(self, somearg):
-        print(f"----DEBUG SOME ARG {somearg}")
+    async def startFacadeServices(self):
         self.kafka_service = SampleAppKafkaService(self.ctx)
         self.routers.append(self.kafka_service)
         future = asyncio.Future()

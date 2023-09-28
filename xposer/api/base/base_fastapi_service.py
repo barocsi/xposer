@@ -52,7 +52,7 @@ class BaseFastApiService(BaseService):
         config = uvicorn.Config(app=self.fastApi,
                                 host=host,
                                 port=port,
-                                log_level="info",
+                                log_level="debug",
                                 log_config=None
                                 )
         server = uvicorn.Server(config)

@@ -41,15 +41,12 @@ class SampleAppHttpFacade(FacadeBaseClass):
         self.http_router = BaseFastApiService(self.ctx)
         routes = self.app.provideRoutes()
         future = asyncio.Future()
-        asyncio.create_task(self.http_router.startService(
+        await self.http_router.startService(
             self.config.uvicorn_host,
             self.config.uvicorn_port,
             routes,
-            api_prefix=self.api_prefix,
-            callback=future.set_result))
-
-        task = asyncio.create_task(asyncio.wait_for(future, timeout=30))
-        task.add_done_callback(self.handle_task_exception)
+            api_prefix=self.api_prefix
+        )
 
     async def initializeApps(self):
         # SampleAppHttp does not have any specific method
