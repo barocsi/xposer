@@ -8,7 +8,7 @@ from xposer.api.base.base_service import BaseService
 from xposer.api.base.facade_base_class import FacadeBaseClass
 from xposer.core.configure import Configurator
 from xposer.sample_app.rpc_kafka.sample_app_kafka import SampleAppKafka
-from xposer.sample_app.rpc_kafka.sample_app_kafka_router import SampleAppKafkaRouter
+from xposer.sample_app.rpc_kafka.sample_app_kafka_service import SampleAppKafkaService
 
 
 class SampleAppKafkaFacadeConfigModel(BaseKafkaServiceConfigModel):
@@ -34,16 +34,16 @@ class SampleAppKafkaFacade(FacadeBaseClass):
     async def initializeApps(self):
         self.app = SampleAppKafka(self.ctx)
 
-    async def start_kafka_router(self, callback):
-        await self.kafka_router.start_router(app=self.app,
-                                       server_string=self.config.router_kafka_server_string,
-                                       group_id=self.config.router_kafka_group_id,
-                                       inbound_topic=self.config.router_kafka_inbound_topic,
-                                       outbound_topic=self.config.router_kafka_outbound_topic,
-                                       exception_topic=self.config.router_kafka_exception_topic,
-                                       handler_func=self.app.RPCHandler,
-                                       produce_on_result=True,
-                                       callback=callback)
+    async def start_kafka_service(self, callback):
+        await self.kafka_service.start_service(app=self.app,
+                                               server_string=self.config.router_kafka_server_string,
+                                               group_id=self.config.router_kafka_group_id,
+                                               inbound_topic=self.config.router_kafka_inbound_topic,
+                                               outbound_topic=self.config.router_kafka_outbound_topic,
+                                               exception_topic=self.config.router_kafka_exception_topic,
+                                               handler_func=self.app.RPCHandler,
+                                               produce_on_result=True,
+                                               callback=callback)
 
     def handle_task_exception(self, task):
         try:
@@ -51,13 +51,14 @@ class SampleAppKafkaFacade(FacadeBaseClass):
             task.result()
         except asyncio.TimeoutError:
             ...
-            #raise ValueError("The service did not start within 30 seconds!")
+            # raise ValueError("The service did not start within 30 seconds!")
 
-    async def startServices(self):
-        self.kafka_router = SampleAppKafkaRouter(self.ctx)
-        self.routers.append(self.kafka_router)
+    async def startFacadeServices(self, somearg):
+        print(f"----DEBUG SOME ARG {somearg}")
+        self.kafka_service = SampleAppKafkaService(self.ctx)
+        self.routers.append(self.kafka_service)
         future = asyncio.Future()
-        asyncio.create_task(self.start_kafka_router(callback=future.set_result))
+        asyncio.create_task(self.start_kafka_service(callback=future.set_result))
         task = asyncio.create_task(asyncio.wait_for(future, timeout=30))
         task.add_done_callback(self.handle_task_exception)
 

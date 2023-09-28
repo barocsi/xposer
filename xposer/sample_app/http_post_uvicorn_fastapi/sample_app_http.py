@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 from xposer.core.boot import Boot
 from xposer.core.configure import Configurator
 from xposer.core.context import Context
-from xposer.sample_app.http_post_uvicorn_fastapi.routers.sample_app_http_router import SampleAppHTTPRouter
+from xposer.sample_app.http_post_uvicorn_fastapi.routers.sample_app_http_service import SampleAppHTTPService
 
 
 class SampleAppHTTPItem(BaseModel):
@@ -38,7 +38,7 @@ class SampleAppHTTP:
         self.ctx.logger.info(f"Initialized application")
 
     def provideRoutes(self):
-        routes = SampleAppHTTPRouter.getRoute(self.ctx)
+        routes = SampleAppHTTPService.getRoute(self.ctx)
         return [routes]
 
 

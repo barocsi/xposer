@@ -36,7 +36,7 @@ class AbstractFacade(ABC, Generic[T]):
         ...
 
     @abstractmethod
-    async def startServices(self):
+    async def startFacadeServices(self):
         ...
 
     @abstractmethod

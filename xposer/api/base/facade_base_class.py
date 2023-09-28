@@ -32,7 +32,7 @@ class FacadeBaseClass(AbstractFacade, ABC):
     async def initializeApps(self):
         raise NotImplementedError
 
-    async def startServices(self):
+    async def startFacadeServices(self):
         raise NotImplementedError
 
     async def asyncInit(self):
@@ -54,6 +54,6 @@ class FacadeBaseClass(AbstractFacade, ABC):
     async def tearDownApp(self):
         self.ctx.logger.debug("Tearing down main application")
         app = self.ctx.facade.app
-        if app is not None and isinstance(app.get('tearDown', None), FunctionType):
-            task = asyncio.create_task(app.tearDown())
+        if app is not None and hasattr(app,'tearDownApp'):
+            task = asyncio.create_task(app.tearDownApp())
             await task

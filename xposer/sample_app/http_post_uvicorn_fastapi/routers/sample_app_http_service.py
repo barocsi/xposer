@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from xposer.core.context import Context
 
 
-class SampleAppHTTPRouter():
+class SampleAppHTTPService():
     @staticmethod
     def getRoute(ctx: Context):
         router = APIRouter()

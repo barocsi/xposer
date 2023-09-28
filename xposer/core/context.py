@@ -1,3 +1,4 @@
+import queue
 from logging import Logger
 
 from xposer.core.configuration_model import ConfigModel
@@ -7,6 +8,8 @@ class Context:
     _instance = None
     logger: Logger = None
     config: ConfigModel = None
+    message_queue = queue.Queue()
+    exception_queue = queue.Queue()
     state = None
     facade: None
 

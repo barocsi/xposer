@@ -6,7 +6,7 @@ from xposer.api.base.base_fastapi_service import BaseFastApiService
 from xposer.api.base.base_fastapi_service_config_model import BaseFastApiRouterConfigModel
 from xposer.api.base.facade_base_class import FacadeBaseClass
 from xposer.core.configure import Configurator
-from xposer.sample_app.http_post_uvicorn_fastapi.routers.sample_app_http_router import SampleAppHTTPRouter
+from xposer.sample_app.http_post_uvicorn_fastapi.routers.sample_app_http_service import SampleAppHTTPService
 from xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http import SampleAppHTTP
 
 
@@ -20,7 +20,7 @@ class SampleAppHttpFacade(FacadeBaseClass):
     config_prefix: str = "xpfacade_"
     api_prefix: str = "/api"
     app: SampleAppHTTP = None
-    fastapi_router: SampleAppHTTPRouter = None
+    fastapi_router: SampleAppHTTPService = None
     facade_conf_class: SampleAppHttpFacadeConfigModel
 
     def mergeConfigurationFromPrefix(self) -> SampleAppHttpFacadeConfigModel:
@@ -37,7 +37,7 @@ class SampleAppHttpFacade(FacadeBaseClass):
         except asyncio.TimeoutError:
             raise ValueError("The service did not start within 30 seconds!")
 
-    async def startServices(self):
+    async def startFacadeServices(self):
         self.http_router = BaseFastApiService(self.ctx)
         routes = self.app.provideRoutes()
         future = asyncio.Future()

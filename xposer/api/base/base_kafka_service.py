@@ -10,7 +10,7 @@ from xposer.api.base.base_service import BaseService
 class BaseKafkaService(BaseService):
     _cancelled: bool = False
 
-    async def start_router(self,
+    async def start_service(self,
                            app: Any,
                            server_string: str,
                            group_id: str,

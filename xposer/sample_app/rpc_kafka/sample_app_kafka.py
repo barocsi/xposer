@@ -30,7 +30,7 @@ class SampleAppKafka:
                                                              )
         self.ctx.logger.info(f"Initialized application")
 
-    async def RPCHandler(self, data: Any):
+    def RPCHandler(self, data: Any):
         self.ctx.logger.info(
             f"Sample call with correlation id:{data.get('correlation_id', 'None')} receives sample raw data:\n{json.dumps(data, indent=4)}")
         return json.dumps({"result": "whoa", "originalfoo": data.get('foo', 'None')})
