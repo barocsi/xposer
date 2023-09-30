@@ -62,3 +62,9 @@ The facade must be implemented by the developer using the following implementati
 
 ### rpc_kafka package
 
+
+# Create a package
+## Create local distribution
+python setup.py sdist --dist-dir /path/to/target/folder
+## Use this distribution
+### Local pip install
