@@ -29,6 +29,8 @@ xposer/sample_app/__init__.py
 xposer/sample_app/http_post_uvicorn_fastapi/__init__.py
 xposer/sample_app/http_post_uvicorn_fastapi/sample_app_http.py
 xposer/sample_app/http_post_uvicorn_fastapi/sample_app_http_facade.py
+xposer/sample_app/http_post_uvicorn_fastapi/routers/__init__.py
+xposer/sample_app/http_post_uvicorn_fastapi/routers/sample_app_http_service.py
 xposer/sample_app/rpc_kafka/__init__.py
 xposer/sample_app/rpc_kafka/decorator_sample.py
 xposer/sample_app/rpc_kafka/sample_app_kafka.py

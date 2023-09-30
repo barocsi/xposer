@@ -9,8 +9,6 @@ from xposer.api.base.facade_base_class import FacadeBaseClass
 from xposer.core.configure import Configurator
 from xposer.sample_app.rpc_kafka.sample_app_kafka import SampleAppKafka
 from xposer.sample_app.rpc_kafka.sample_app_kafka_service import SampleAppKafkaService
-
-
 class SampleAppKafkaFacadeConfigModel(BaseKafkaServiceConfigModel):
     foo: str = Field(default='foo',
                      description="Some facade specific config")

@@ -30,41 +30,56 @@ and also will be overridden from the command line variable (it's case insensitiv
 
 ## Downstream configurations
 
-There is basically one process for attaining and loading configurations, however based on prefixes and configuration objects (pydantic) its possible to map variables from the configuration object for multiple levels:
+There is basically one process for attaining and loading configurations, however based on prefixes and configuration
+objects (pydantic) its possible to map variables from the configuration object for multiple levels:
 global level: prefix 'xp_' mapping location: core/configuration_model.py
-application level: prefix is your choice 
+application level: prefix is your choice
 
-By default, all configuration parameter is loaded to global configuration object. If something does not have a counterpart in the main configuration object, it will loiter there with the xp_ prefix unprocessed
-So if you provide an `xp_mysettings_custom_param = 'foobar'`in the configuration (or Environment or CLI arg), the global configuration object, that is accessible from the `Context.config` will hold that parameter and value.
+By default, all configuration parameter is loaded to global configuration object. If something does not have a
+counterpart in the main configuration object, it will loiter there with the xp_ prefix unprocessed
+So if you provide an `xp_mysettings_custom_param = 'foobar'`in the configuration (or Environment or CLI arg), the global
+configuration object, that is accessible from the `Context.config` will hold that parameter and value.
 
-Whenever you have your own pydantic settings object named **_MYSETTINGS_**, that you want to be defined in your config.yaml, environment or command line, you can do it like:
+Whenever you have your own pydantic settings object named **_MYSETTINGS_**, that you want to be defined in your
+config.yaml, environment or command line, you can do it like:
 
 - lets say your application has a sample config model, create a shallow copy of the keys,
-`app_config_defaults = SampleAppHTTPConfigModel.model_construct(_validate=False)`
+  `app_config_defaults = SampleAppHTTPConfigModel.model_construct(_validate=False)`
 
-- Merge the ctx.config values but not all, only those which match to SampleAppHTTPConfigModel fields (prefixing with 'app_fast_logic')
-`app_config_merged = Configurator.mergePrefixedAttributes(app_config_defaults, ctx.config, 'xp_mysettings_')`
+- Merge the ctx.config values but not all, only those which match to SampleAppHTTPConfigModel fields (prefixing with '
+  app_fast_logic')
+  `app_config_merged = Configurator.mergePrefixedAttributes(app_config_defaults, ctx.config, 'xp_mysettings_')`
 
 - Validate your model to make sure all fits
-`app_config_merged.model_validate(app_config_merged)`
+  `app_config_merged.model_validate(app_config_merged)`
 
 so your app_config_merged will contain `custom_param = 'foobar'`
 
 ## Facades
 
-A Facade is a small component that is called (based on the configuration parameters) and is responsible to initialize your application logic.
+A Facade is a small component that is called (based on the configuration parameters) and is responsible to initialize
+your application logic.
 The facade must be implemented by the developer using the following implementations:
 
 ## Docker
-
 
 ## Examples in sample_app folder
 
 ### rpc_kafka package
 
+# Import local packages
+
+pip install
 
 # Create a package
+
 ## Create local distribution
-python setup.py sdist --dist-dir /path/to/target/folder
+
+python setup.py sdist --dist-dir /dists
+
+## Use package in other projects
+
+
 ## Use this distribution
+
 ### Local pip install
