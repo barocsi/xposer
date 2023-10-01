@@ -9,9 +9,10 @@ python -m xposer.sample_app.rpc_kafka.sample_app_kafka --config=xposer/sample_ap
 
 **app.py** - the main logic that contains the rpc_handler function and the boot sequence
 **config.yaml** - configuration
-**facade.yaml** - facade logic to override default routers
+**xpcontroller.yaml** - xpcontroller logic to override default routers
 
-* _initializeAppsBeforeRouters_: must be implemented in your facade class so your apps (if any) rpc_handler function can
+* _initializeAppsBeforeRouters_: must be implemented in your xpcontroller class so your apps (if any) rpc_handler
+  function can
   be prepared
 * _initializeRouters_: must be implemented, this part describes what kind of channels will be activated and how will
   they behave, you can implement your own solution as well based on the default routers

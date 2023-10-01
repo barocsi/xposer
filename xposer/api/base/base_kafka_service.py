@@ -5,21 +5,25 @@ from typing import Any, Callable
 
 from xposer.api.base.base_kafka_aiolib import AIOConsumer, AIOProducer
 from xposer.api.base.base_service import BaseService
+from xposer.core.context import Context
 
 
 class BaseKafkaService(BaseService):
-    _cancelled: bool = False
+
+    def __init__(self, ctx: Context):
+        super().__init__(ctx)
+        _cancelled: bool = False
 
     async def start_service(self,
-                           app: Any,
-                           server_string: str,
-                           group_id: str,
-                           inbound_topic: str,
-                           outbound_topic: str,
-                           exception_topic: str,
-                           handler_func: Callable = None,
-                           produce_on_result: bool = False,
-                           callback=None):
+                            app: Any,
+                            server_string: str,
+                            group_id: str,
+                            inbound_topic: str,
+                            outbound_topic: str,
+                            exception_topic: str,
+                            handler_func: Callable = None,
+                            produce_on_result: bool = False,
+                            callback=None):
 
         self._cancelled = False
 

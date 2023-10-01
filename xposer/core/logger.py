@@ -5,6 +5,7 @@ from confluent_kafka import Producer
 
 from xposer.core.configuration_model import ConfigModel
 
+
 class XposeLogger(logging.Logger):
     def makeRecord(self, *args, **kwargs):
         record = super().makeRecord(*args, **kwargs)

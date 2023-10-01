@@ -6,9 +6,10 @@ from xposer.core.context import Context
 T = TypeVar('T')
 
 
-class AbstractFacade(ABC, Generic[T]):
+class AbstractXPController(ABC, Generic[T]):
     _ctx: Context
-    facade_conf_class: Type[T]
+    xpcontroller_conf_class: Type[T]
+
     @property
     @abstractmethod
     def name(self):
@@ -32,11 +33,7 @@ class AbstractFacade(ABC, Generic[T]):
         pass
 
     @abstractmethod
-    async def asyncInit(self):
-        ...
-
-    @abstractmethod
-    async def startFacadeServices(self):
+    async def startXPControllerServices(self):
         ...
 
     @abstractmethod
@@ -44,5 +41,5 @@ class AbstractFacade(ABC, Generic[T]):
         ...
 
     @abstractmethod
-    async def tearDownFacade(self):
+    async def tearDownXPController(self):
         pass

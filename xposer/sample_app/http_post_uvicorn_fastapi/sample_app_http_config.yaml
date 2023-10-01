@@ -1,14 +1,14 @@
-# boot and facade
-xpcore_facade_module_name: "xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http_facade"
-xpcore_facade_class_name: "SampleAppHttpFacade"
+# boot and xpcontroller
+xpcore_xpcontroller_module_name: "xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http_xpcontroller"
+xpcore_xpcontroller_class_name: "SampleAppHttpXPController"
 xpcore_highlevel_variable: "passed"
 xpcore_log_to_console_enabled: "true"
 xpcore_log_to_console_loglevel: "DEBUG"
 xpcore_log_to_kafka_enabled: "true"
 xpcore_log_to_kafka_server_string: "0.0.0.0:9092"
 
-# Facade level config
-xpfacade_someparam: "bak"
+# XPController level config
+xpcontroller_someparam: "bak"
 
 # App level config
 xpapp_bar: "baz"

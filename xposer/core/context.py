@@ -1,5 +1,6 @@
 import queue
 from logging import Logger
+from typing import Any, Dict, List
 
 from xposer.core.configuration_model import ConfigModel
 
@@ -8,10 +9,11 @@ class Context:
     _instance = None
     logger: Logger = None
     config: ConfigModel = None
-    message_queue = queue.Queue()
-    exception_queue = queue.Queue()
+    message_queue: queue.Queue[Dict[str, Any]] = queue.Queue()
+    exception_queue: queue.Queue[Dict[str, Any]] = queue.Queue()
+    xptask_list: List[Any] = []
     state = None
-    facade: None
+    xpcontroller: None
 
     def __init__(self, logger, config, state):
         self.logger = logger

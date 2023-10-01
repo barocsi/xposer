@@ -2,8 +2,6 @@
 
 import argparse
 
-from my_class import Calculator
-
 
 def main():
     parser = argparse.ArgumentParser()

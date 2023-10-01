@@ -20,12 +20,12 @@ class ConfigModel(BaseSettings):
     log_to_kafka_server_log_topic: str = Field('log',
                                                error_messages={
                                                })
-    facade_module_name: str | None = Field(...,
-                                           error_messages={
-                                           })
-    facade_class_name: str | None = Field(...,
-                                          error_messages={
-                                          })
+    xpcontroller_module_name: str | None = Field(...,
+                                                 error_messages={
+                                                 })
+    xpcontroller_class_name: str | None = Field(...,
+                                                error_messages={
+                                                })
 
     model_config = ConfigDict(extra='allow')
 

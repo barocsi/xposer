@@ -6,6 +6,7 @@ class EventDispatcher:
         def decorator(func):
             self._events.setdefault(event_name, []).append(func)
             return func
+
         return decorator
 
     def dispatch(self, event_name, *args, **kwargs):
@@ -17,13 +18,16 @@ class EventDispatcher:
 
 dispatcher = EventDispatcher()
 
+
 @dispatcher.on_event("startup")
 def on_startup():
     print("Startup event triggered")
 
+
 @dispatcher.on_event("shutdown")
 def on_shutdown():
     print("Shutdown event triggered")
+
 
 # Triggering events
 dispatcher.dispatch("startup")

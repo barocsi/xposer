@@ -1,86 +1,107 @@
 import asyncio
 import logging
-import queue
 import threading
-from typing import Any, Callable, Optional, Union
+import traceback
+from asyncio import Event
+from typing import Any, Callable, Optional, TypeVar, Union
+
+import shortuuid
 
 from xposer.core.context import Context
 
+T = TypeVar('T', bound='MyClass')
+
 
 class XPTask:
-    """XPTask class for wrapping potentially long-running functions in separate async threads.
 
-    The class manages exceptions through a thread-safe queue mechanism.
+    @staticmethod
+    async def cancel_tasks_for_loop(loop, timeout=1):
+        if loop.is_running():
+            loop.stop()
 
-    Attributes:
-        task (asyncio.Task): The asyncio task wrapped by XPTask.
-        ctx (Context): Application context.
-        task_loop (asyncio.AbstractEventLoop): Event loop for the task.
-    """
+        await loop.shutdown_asyncgens()
 
-    task: Optional[asyncio.Task]
-    ctx: Context
-    task_loop: Optional[asyncio.AbstractEventLoop]
+        pending = asyncio.all_tasks(loop=loop)
+
+        for task in pending:
+            task.cancel()
+
+        try:
+            await asyncio.wait_for(asyncio.gather(*pending, return_exceptions=True), timeout)
+        except asyncio.TimeoutError:
+            print(f"Tasks did not cancel within {timeout} seconds. Forcibly closing the loop.")
+
+        if not loop.is_closed():
+            ...
 
     def __init__(self, ctx: Context) -> None:
-        """Initialize the XPTask with the given application context.
-
-        Args:
-            ctx (Context): Application context.
-        """
         self.re_raise_exception: Optional[bool] = None
-        self.task: Optional[asyncio.Task] = None
-        self.task_slug: Optional[str] = None
-        self.task_loop: Optional[asyncio.AbstractEventLoop] = None
+        self.wraped_threaded_func_task: Optional[asyncio.Task] = None
+        self.wraped_threaded_func_task_slug: Optional[str] = None
+        self.wraped_threaded_func_task_loop: Optional[asyncio.AbstractEventLoop] = None
         self.custom_logger: Optional[logging.Logger] = None
-        self.exception_queue = queue.Queue()
+        self.shutdown_event: Event = None
+        self.id = shortuuid.ShortUUID().random(length=7)
+        task: Optional[asyncio.Task]
+        ctx: Context
+        task_loop: Optional[asyncio.AbstractEventLoop]
+        is_shut_down: bool = False
         self.ctx = ctx
 
     @property
     def logger(self) -> logging.Logger:
-        """Get the logger for the task.
-
-        Returns:
-            logging.Logger: Logger object.
-        """
-        return self.custom_logger or logging.getLogger(self.task_slug or "XPTask")
+        return self.custom_logger or logging.getLogger(self.wraped_threaded_func_task_slug or "XPTask")
 
     def handle_task_loop_exception(self, loop: asyncio.AbstractEventLoop, context: dict) -> None:
-        """Handle exceptions in the task loop."""
-        self.logger.error(f"Caught exception in {self.task_slug}: {context['message']}")
+        self.logger.error(f"[XPTask] Caught exception in {self.wraped_threaded_func_task_slug}: {context['message']}")
         exception = context.get('exception')
-        # Thread safe method of raising exceptions
         if self.ctx.exception_queue:
-            self.ctx.exception_queue.put(exception)
+            self.ctx.exception_queue.put_nowait(exception)
 
     def run_loop_in_thread(self, to_be_threadified_func: Callable) -> None:
-        """Run the event loop for the task in a separate thread."""
-
         async def coroutine_wrapper():
             await to_be_threadified_func()
 
-        self.task_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.task_loop)
-        self.task_loop.set_exception_handler(self.handle_task_loop_exception)
-        self.task = self.task_loop.create_task(coroutine_wrapper())
-        self.task_loop.run_until_complete(self.task)
+        self.wraped_threaded_func_task_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.wraped_threaded_func_task_loop)
+        self.wraped_threaded_func_task_loop.set_exception_handler(self.handle_task_loop_exception)
+        self.wraped_threaded_func_task = self.wraped_threaded_func_task_loop.create_task(coroutine_wrapper())
+        self.wraped_threaded_func_task_loop.run_forever()
+
+    def thread_exception_handler(args):
+        print("Exception in thread:", args['thread'].name)
+        traceback.print_exception(args['exc_type'], args['exc_value'], args['traceback'])
+
+    threading.excepthook = thread_exception_handler
 
     def create_task(self,
                     to_be_threadified_func: Callable,
                     exception_callback: Callable[[Union[Any, None], Exception], None],
                     custom_logger: Optional[logging.Logger] = None,
                     task_slug: str = '',
-                    re_raise_exception: bool = True) -> asyncio.Task:
+                    re_raise_exception: bool = True) -> T:
         self.on_exception_callback = exception_callback
         self.custom_logger = custom_logger
         self.re_raise_exception = re_raise_exception
-        self.task_slug = task_slug
+        self.wraped_threaded_func_task_slug = task_slug
         self.logger.debug("Creating task in a new thread")
-        thread = threading.Thread(target=self.run_loop_in_thread, args=(to_be_threadified_func,))
-        thread.start()
-        return self.task
+        self.thread = threading.Thread(target=self.run_loop_in_thread, args=(to_be_threadified_func,))
+        self.thread.daemon = True
+        self.thread.start()
+        return self
+
+    async def shutdown(self):
+        # Todo implement graceful options for XPTasks that are not actually daemons
+        self.ctx.logger.debug(f"Shutting down XPtask:{self.id}")
+
+        await XPTask.cancel_tasks_for_loop(self.wraped_threaded_func_task_loop)
+        """
+        if self.thread.is_alive():
+            self.ctx.logger.warning(f"Terminating thread for XPtask:{self.id}")
+        self.thread.join()
+        pass
+        """
 
     def __del__(self) -> None:
         """Close the event loop if it is not already closed."""
-        if self.task_loop and not self.task_loop.is_closed():
-            self.task_loop.close()
+        self.shutdown()

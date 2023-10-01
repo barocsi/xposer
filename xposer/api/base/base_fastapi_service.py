@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import List
 
@@ -6,6 +7,7 @@ from fastapi import APIRouter, FastAPI
 from uvicorn.config import LOGGING_CONFIG
 
 from xposer.api.base.base_service import BaseService
+from xposer.core.context import Context
 
 LOGGING_CONFIG["loggers"]["uvicorn"]["handlers"] = ["default"]
 LOGGING_CONFIG["loggers"]["uvicorn.access"]["handlers"] = ["default"]
@@ -16,16 +18,11 @@ LOGGING_CONFIG["loggers"]["xpose_logger"] = {
 }
 
 
-class Context:
-    def __init__(self, value: str):
-        self.value = value
-
-
 class BaseFastApiService(BaseService):
-    fastApi: FastAPI = None
 
-    def provide_context(self) -> Context:
-        return self.ctx
+    def __init__(self, ctx: Context):
+        super().__init__(ctx)
+        self.fastApi: FastAPI = None
 
     async def startService(self,
                            host,
@@ -40,6 +37,8 @@ class BaseFastApiService(BaseService):
         @self.fastApi.on_event("startup")
         async def on_startup():
             if callback:
+                await asyncio.sleep(1)
+                print("Fastapi init callback")
                 callback(None)
 
         xpose_logger = self.ctx.logger
@@ -55,5 +54,7 @@ class BaseFastApiService(BaseService):
                                 log_level="debug",
                                 log_config=None
                                 )
+        loop = asyncio.get_event_loop()
         server = uvicorn.Server(config)
-        await server.serve()
+        asyncio.create_task(server.serve())
+        return server

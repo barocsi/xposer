@@ -1,6 +1,6 @@
-# boot and facade
-xpcore_facade_module_name: "xposer.sample_app.rpc_kafka.sample_app_kafka_facade"
-xpcore_facade_class_name: "SampleAppKafkaFacade"
+# boot and xpcontroller
+xpcore_xpcontroller_module_name: "xposer.sample_app.rpc_kafka.sample_app_kafka_xpcontroller"
+xpcore_xpcontroller_class_name: "SampleAppKafkaXPController"
 xpcore_highlevel_variable: "passed"
 xpcore_log_to_console_enabled: "true"
 xpcore_log_to_console_loglevel: "DEBUG"
@@ -8,12 +8,12 @@ xpcore_log_to_kafka_enabled: "true"
 xpcore_log_to_kafka_server_string: "0.0.0.0:9092"
 
 # Built-in config
-xpfacade_kafka_inbound_topic: "router_inbound"
-xpfacade_kafka_outbound_topic: "router_outbound"
-xpfacade_kafka_exception_topic: "router_exception"
-xpfacade_kafka_server_string: "0.0.0.0:9092"
-xpfacade_kafka_group_id: "router"
-xpfacade_kafka_bar: "baz"
+xpcontroller_kafka_inbound_topic: "router_inbound"
+xpcontroller_kafka_outbound_topic: "router_outbound"
+xpcontroller_kafka_exception_topic: "router_exception"
+xpcontroller_kafka_server_string: "0.0.0.0:9092"
+xpcontroller_kafka_group_id: "router"
+xpcontroller_kafka_bar: "baz"
 
 # App Sub config
 xpapp_logic_param_to_override: "not_jens"

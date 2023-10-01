@@ -2,7 +2,8 @@
 
 ### Start
 
-python -m xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http --config=xposer/sample_app/http_post_uvicorn_fastapi/sample_app_http_config.yaml
+python -m xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http
+--config=xposer/sample_app/http_post_uvicorn_fastapi/sample_app_http_config.yaml
 
 ### Requirements
 

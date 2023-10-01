@@ -5,25 +5,27 @@ from pydantic import ConfigDict, Field
 
 from xposer.api.base.base_kafka_service_config_model import BaseKafkaServiceConfigModel
 from xposer.api.base.base_service import BaseService
-from xposer.api.base.facade_base_class import FacadeBaseClass
+from xposer.api.base.xpcontroller_base_class import XPControllerBaseClass
 from xposer.core.configure import Configurator
 from xposer.sample_app.rpc_kafka.sample_app_kafka import SampleAppKafka
 from xposer.sample_app.rpc_kafka.sample_app_kafka_service import SampleAppKafkaService
-class SampleAppKafkaFacadeConfigModel(BaseKafkaServiceConfigModel):
+
+
+class SampleAppKafkaXPControllerConfigModel(BaseKafkaServiceConfigModel):
     foo: str = Field(default='foo',
-                     description="Some facade specific config")
+                     description="Some xpcontroller specific config")
     bar: str = Field('bar')
     model_config = ConfigDict(extra='allow')
 
 
-class SampleAppKafkaFacade(FacadeBaseClass):
-    config_prefix: str = "xpfacade_"
+class SampleAppKafkaXPController(XPControllerBaseClass):
+    config_prefix: str = "xpcontroller_"
     app: SampleAppKafka = None
-    facade_conf_class: SampleAppKafkaFacadeConfigModel
+    xpcontroller_conf_class: SampleAppKafkaXPControllerConfigModel
     routers: List[BaseService] = []
 
-    def mergeConfigurationFromPrefix(self) -> SampleAppKafkaFacadeConfigModel:
-        return Configurator.mergeAttributesWithPrefix(SampleAppKafkaFacadeConfigModel,
+    def mergeConfigurationFromPrefix(self) -> SampleAppKafkaXPControllerConfigModel:
+        return Configurator.mergeAttributesWithPrefix(SampleAppKafkaXPControllerConfigModel,
                                                       self.ctx.config,
                                                       self.config_prefix,
                                                       validate=True,
@@ -51,7 +53,7 @@ class SampleAppKafkaFacade(FacadeBaseClass):
             ...
             # raise ValueError("The service did not start within 30 seconds!")
 
-    async def startFacadeServices(self):
+    async def startXPControllerServices(self):
         self.kafka_service = SampleAppKafkaService(self.ctx)
         self.routers.append(self.kafka_service)
         future = asyncio.Future()
@@ -60,4 +62,4 @@ class SampleAppKafkaFacade(FacadeBaseClass):
         task.add_done_callback(self.handle_task_exception)
 
     def afterInititalization(self):
-        self.ctx.logger.debug(f"Facade starting")
+        self.ctx.logger.debug(f"XPController starting")

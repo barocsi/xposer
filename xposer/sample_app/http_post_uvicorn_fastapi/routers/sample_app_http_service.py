@@ -12,8 +12,7 @@ class SampleAppHTTPService():
         async def sample_route():
             return {"router": "custom",
                     "xpcore": ctx.config.model_dump(),
-                    "xpfacade": ctx.facade.config.model_dump(),
-                    "xpapp": ctx.facade.app.config.model_dump()
+                    "xpcontroller": ctx.xpcontroller.config.model_dump()
                     }
 
         return router
