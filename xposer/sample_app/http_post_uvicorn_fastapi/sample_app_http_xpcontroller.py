@@ -1,5 +1,4 @@
 import asyncio
-import os
 
 from pydantic import Field
 
@@ -36,10 +35,9 @@ class SampleAppHttpXPController(XPControllerBaseClass):
 
     def handle_task_exception(self, task):
         try:
-            # This will re-raise the exception if one occurred.
             task.result()
         except asyncio.TimeoutError:
-            raise ValueError("The service did not start within 30 seconds!")
+            raise ValueError("The FastAPI service did not start within 30 seconds!")
 
     async def start_fastapi_service(self, callback):
         self.uvicorn_server = await self.http_router.startService(
@@ -51,17 +49,18 @@ class SampleAppHttpXPController(XPControllerBaseClass):
         )
 
     async def tearDownXPController(self):
+        self.ctx.logger.info("tearDownXPController called")
         self.uvicorn_server.should_exit = True
         await asyncio.sleep(1)
-
 
     async def startXPControllerServices(self):
         self.http_router = BaseFastApiService(self.ctx)
         future = asyncio.Future()
-        asyncio.create_task(self.start_fastapi_service(callback=None))
-        task = asyncio.create_task(asyncio.wait_for(future, timeout=3))
-        task.add_done_callback(self.handle_task_exception)
-
+        fastapi_service_task = asyncio.create_task(self.start_fastapi_service(callback=future.set_result))
+        fastapi_service_task.set_name("SampleAppHttpController:FastApiServiceTask")
+        timeout_task = asyncio.create_task(asyncio.wait_for(future, timeout=3))
+        timeout_task.set_name("SampleAppHttpXPController::FastApiServiceTimeoutTask")
+        timeout_task.add_done_callback(self.handle_task_exception)
 
     def afterInititalization(self):
         self.ctx.logger.debug(f"XPController starting")

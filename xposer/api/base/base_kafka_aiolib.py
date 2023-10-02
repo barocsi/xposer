@@ -11,6 +11,7 @@ class AIOProducer:
         self._producer = Producer(configs)
         self._cancelled = False
         self._poll_task = self._loop.create_task(self._poll_loop())
+        self._poll_task.set_name("AIOProducer::Poll")
 
     async def _poll_loop(self):
         while not self._cancelled:
@@ -44,6 +45,7 @@ class AIOConsumer:
         self._consumer = Consumer(configs)
         self._consumer.subscribe(inbound_topics)
         self._consume_task = self._loop.create_task(self._consume_loop())
+        self._consume_task.set_name("AIOConsumer::Consume")
         self._handler_func = handler_func
         self._cancelled = False
 

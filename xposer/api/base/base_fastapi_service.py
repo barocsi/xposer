@@ -37,8 +37,7 @@ class BaseFastApiService(BaseService):
         @self.fastApi.on_event("startup")
         async def on_startup():
             if callback:
-                await asyncio.sleep(1)
-                print("Fastapi init callback")
+                self.ctx.logger.debug("FastAPI initialization successful")
                 callback(None)
 
         xpose_logger = self.ctx.logger
@@ -56,5 +55,6 @@ class BaseFastApiService(BaseService):
                                 )
         loop = asyncio.get_event_loop()
         server = uvicorn.Server(config)
-        asyncio.create_task(server.serve())
+        server_task = asyncio.create_task(server.serve())
+        server_task.set_name("AIOProducer::Poll")
         return server
