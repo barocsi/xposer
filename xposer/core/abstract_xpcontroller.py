@@ -35,6 +35,10 @@ class AbstractXPController(ABC, Generic[T]):
         ...
 
     @abstractmethod
+    async def tearDownXPControllerServices(self) -> None:
+        ...
+
+    @abstractmethod
     def mergeConfigurationFromPrefix(self) -> T:
         ...
 

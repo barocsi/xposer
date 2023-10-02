@@ -1,5 +1,6 @@
 import asyncio
-from typing import List
+import json
+from typing import Any, List
 
 from pydantic import ConfigDict, Field
 
@@ -31,8 +32,10 @@ class SampleAppKafkaXPController(XPControllerBaseClass):
                                                       validate=True,
                                                       strict=True)
 
-    async def initializeApps(self):
-        self.app = SampleAppKafka(self.ctx)
+    async def RPCHandler(self, data: Any):
+        self.ctx.logger.info(
+            f"Sample call with correlation id:{data.get('correlation_id', 'None')} receives sample raw data:\n{json.dumps(data, indent=4)}")
+        return json.dumps({"result": "whoa", "originalfoo": data.get('foo', 'None')})
 
     async def start_kafka_service(self, callback):
         await self.kafka_service.start_service(app=self.app,
@@ -41,7 +44,7 @@ class SampleAppKafkaXPController(XPControllerBaseClass):
                                                inbound_topic=self.config.router_kafka_inbound_topic,
                                                outbound_topic=self.config.router_kafka_outbound_topic,
                                                exception_topic=self.config.router_kafka_exception_topic,
-                                               handler_func=self.app.RPCHandler,
+                                               handler_func=self.RPCHandler,
                                                produce_on_result=True,
                                                callback=callback)
 
@@ -51,7 +54,10 @@ class SampleAppKafkaXPController(XPControllerBaseClass):
             task.result()
         except asyncio.TimeoutError:
             ...
-            # raise ValueError("The service did not start within 30 seconds!")
+            raise ValueError("The service did not start within 30 seconds!")
+
+    async def tearDownXPControllerServices(self):
+        ...
 
     async def startXPControllerServices(self):
         self.kafka_service = SampleAppKafkaService(self.ctx)
@@ -59,9 +65,10 @@ class SampleAppKafkaXPController(XPControllerBaseClass):
         future = asyncio.Future()
         kafka_service_task = asyncio.create_task(self.start_kafka_service(callback=future.set_result))
         kafka_service_task.set_name("SampleAppKafkaXPController:KafkaServiceTask")
-        timeout_task = asyncio.create_task(asyncio.wait_for(future, timeout=30))
+        timeout_task = asyncio.create_task(asyncio.wait_for(future, timeout=1))
         timeout_task.set_name("SampleAppKafkaXPController:KafkaServiceTimeoutTask")
         timeout_task.add_done_callback(self.handle_task_exception)
+        await future
 
     def afterInititalization(self):
         self.ctx.logger.debug(f"XPController starting")

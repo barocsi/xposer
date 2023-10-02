@@ -20,7 +20,7 @@ class Boot:
     def _sync_shutdown_handler(self, *_: Any) -> None:
         self.ctx.logger.warning("\n*** CLI Shutdown signal received ***")
         if not self.shutdown_in_progress:
-            asyncio.create_task(self.shutdown() )
+            asyncio.create_task(self.shutdown())
 
     async def shutdown(self) -> None:
         if self.shutdown_in_progress:
@@ -29,7 +29,6 @@ class Boot:
         self.shutdown_in_progress = True
         self.ctx.logger.info("Shutting down application initiated")
         self.ctx.message_queue.put({'target': None, 'message': 'shutdown'})
-        await self.ctx.xpcontroller.tearDownXPController()
         await asyncio.sleep(1)
 
         tasks = [asyncio.create_task(xptask.shutdown()) for xptask in self.ctx.xptask_list]
@@ -65,18 +64,28 @@ class Boot:
         logger = get_logger(config)
         context = Context(logger, config, {})
         self.ctx = context
+        loop = asyncio.get_event_loop()
+        loop.id = "main_loop"
         xpcontroller = XPControllerFactory.make(context)
         await xpcontroller.asyncInit()
-
         asyncio.get_event_loop().set_exception_handler(self.handle_loop_exceptions)
+        xptask_initialization_future = asyncio.Future()
+        xptask = XPTask(self.ctx)
 
-        xptask = XPTask(self.ctx).create_task(
-            xpcontroller.startXPControllerServices,
-            None,
-            logger,
-            'boot_xpcontroller_startXPControllerServices',
-            True
+        def initialization_callback():
+            loop.call_soon_threadsafe(xptask_initialization_future.set_result, None)
+
+        xptask.startup(
+            to_be_threadified_func=xpcontroller.startXPControllerServices,
+            initialization_callback=initialization_callback,
+            teardown_func=xpcontroller.tearDownXPControllerServices,
+            main_event_loop=loop,
+            exception_callback=None,
+            custom_logger=logger,
+            task_slug='boot_xpcontroller_startXPControllerServices',
+            re_raise_exception=True
         )
+        await xptask_initialization_future
         self.ctx.xptask_list.append(xptask)
         context.xpcontroller = xpcontroller
 

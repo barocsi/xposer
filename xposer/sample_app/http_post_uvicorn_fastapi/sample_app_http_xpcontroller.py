@@ -26,6 +26,13 @@ class SampleAppHttpXPController(XPControllerBaseClass):
         self.xpcontroller_conf_class: SampleAppHttpControllerConfigModel
         super().__init__(ctx)
 
+    def custom_exception_handler(self, loop, context):
+        exception = context.get('exception')
+        if isinstance(exception, asyncio.CancelledError):
+            print("Task was cancelled, this is expected behavior.")
+        else:
+            print(f"Caught exception: {exception}")
+
     def mergeConfigurationFromPrefix(self) -> SampleAppHttpControllerConfigModel:
         return Configurator.mergeAttributesWithPrefix(SampleAppHttpControllerConfigModel,
                                                       self.ctx.config,
@@ -48,7 +55,7 @@ class SampleAppHttpXPController(XPControllerBaseClass):
             callback=callback,
         )
 
-    async def tearDownXPController(self):
+    async def tearDownXPControllerServices(self):
         self.ctx.logger.info("tearDownXPController called")
         self.uvicorn_server.should_exit = True
         await asyncio.sleep(1)
@@ -61,6 +68,7 @@ class SampleAppHttpXPController(XPControllerBaseClass):
         timeout_task = asyncio.create_task(asyncio.wait_for(future, timeout=3))
         timeout_task.set_name("SampleAppHttpXPController::FastApiServiceTimeoutTask")
         timeout_task.add_done_callback(self.handle_task_exception)
+        await future
 
     def afterInititalization(self):
         self.ctx.logger.debug(f"XPController starting")

@@ -1,7 +1,7 @@
 import asyncio
+import inspect
 import logging
 import threading
-import traceback
 from asyncio import Event
 from typing import Any, Callable, Optional, TypeVar, Union
 
@@ -35,14 +35,15 @@ class XPTask:
 
         if remaining:
             ctx.logger.warn(f"{len(remaining)} tasks have not terminated yet.")
-        for task in remaining:
-            ctx.logger.warn(f"Unterminated task name: {task.get_name()}")
+            for task in remaining:
+                ctx.logger.warn(f"Unterminated task name: {task.get_name()}")
         else:
             ctx.logger.warn("All tasks have been canceled.")
 
         # Safely close the loop
         if loop.is_running():
-            ctx.logger.warn("Loop is still running. Can't close it now.")
+            # ctx.logger.warn("Loop is still running. Can't close it now.")
+            ...
         else:
             loop.close()
 
@@ -72,41 +73,57 @@ class XPTask:
 
     def run_loop_in_thread(self, to_be_threadified_func: Callable) -> None:
         async def coroutine_wrapper():
-            await to_be_threadified_func()
+            if inspect.iscoroutinefunction(to_be_threadified_func):
+                await to_be_threadified_func()
+            else:
+                to_be_threadified_func()
+            self.initialization_callback()
 
+        # Create a new event loop
         self.wrapped_threaded_func_task_loop = asyncio.new_event_loop()
+        self.wrapped_threaded_func_task_loop.id = self.id
+
+        # Set the event loop for this context
         asyncio.set_event_loop(self.wrapped_threaded_func_task_loop)
+
+        # Set exception handler
         self.wrapped_threaded_func_task_loop.set_exception_handler(self.handle_task_loop_exception)
+
+        # Create a new task to run the provided function
         self.wrapped_threaded_func_task = self.wrapped_threaded_func_task_loop.create_task(coroutine_wrapper())
         self.wrapped_threaded_func_task.set_name("XPTASK:WrappedThreadedFunctionCoroutine")
+
+        # Run the event loop indefinitely
         self.wrapped_threaded_func_task_loop.run_forever()
 
-    def thread_exception_handler(args):
-        print("Exception in thread:", args['thread'].name)
-        traceback.print_exception(args['exc_type'], args['exc_value'], args['traceback'])
-
-    threading.excepthook = thread_exception_handler
-
-    def create_task(self,
-                    to_be_threadified_func: Callable,
-                    exception_callback: Callable[[Union[Any, None], Exception], None],
-                    custom_logger: Optional[logging.Logger] = None,
-                    task_slug: str = '',
-                    re_raise_exception: bool = True) -> T:
+    def startup(self,
+                to_be_threadified_func: Callable,
+                initialization_callback: Callable,
+                teardown_func: Callable,
+                main_event_loop: asyncio.AbstractEventLoop,
+                exception_callback: Callable[[Union[Any, None], Exception], None],
+                custom_logger: Optional[logging.Logger] = None,
+                task_slug: str = '',
+                re_raise_exception: bool = True) -> T:
+        self.main_event_loop = main_event_loop
         self.on_exception_callback = exception_callback
+        self.initialization_callback = initialization_callback
         self.custom_logger = custom_logger
+        self.teardown_func = teardown_func
         self.re_raise_exception = re_raise_exception
         self.wrapped_threaded_func_task_slug = task_slug
         self.logger.debug("Creating task in a new thread")
         self.thread = threading.Thread(target=self.run_loop_in_thread, args=(to_be_threadified_func,))
         self.thread.daemon = True
         self.thread.start()
-        return self
 
     async def shutdown(self):
         # Todo implement graceful options for XPTasks that are not actually daemons
         self.ctx.logger.debug(f"Shutting down XPtask:{self.id}")
-
+        if inspect.iscoroutinefunction(self.teardown_func):
+            await self.teardown_func()
+        else:
+            self.teardown_func()
         await XPTask.cancel_tasks_for_loop(self.ctx, self.wrapped_threaded_func_task_loop)
         """
         if self.thread.is_alive():
