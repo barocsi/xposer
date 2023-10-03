@@ -57,7 +57,7 @@ def get_logger(appConfig: ConfigModel):
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
         ch.setFormatter(logging.Formatter(
-            f'%(asctime)-25s | %(levelname)-8s | %(name)-15s | %(filename)-30s | %(funcName)-30s \n{" "*28}%(levelname)-8s | %(message)s\n'))
+            f'%(asctime)-25s | %(levelname)-8s | %(name)-15s | %(filename)-30s | %(funcName)-30s \n{"-"*26}» %(levelname)-8s | %(message)s\n'))
         logger.addHandler(ch)
 
     if appConfig.log_to_kafka_enabled:

@@ -46,6 +46,7 @@ class Boot:
                 self.ctx.logger.error(f"Exception: {exception}")
                 await self.shutdown()
             except (queue.Empty, asyncio.CancelledError):
+                ...
                 await asyncio.sleep(0.1)
 
     def handle_loop_exceptions(self, loop: asyncio.AbstractEventLoop, context: dict) -> None:

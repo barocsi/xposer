@@ -3,25 +3,25 @@
 ### Start
 
 source env/bin/activate
-python -m xposer.sample_app.rpc_kafka.sample_app_kafka --config=xposer/sample_app/rpc_kafka/sample_app_kafka_config.yaml
 
 ### Will accept json on router_inbound topic (or topic defined in the config.yaml)
 
-**app.py** - the main logic that contains the rpc_handler function and the boot sequence
-**config.yaml** - configuration
-**xpcontroller.yaml** - xpcontroller logic to override default routers
+**sample_app_kafka.py** - the main entry point and booting
+**sample_app_kafka_config.yaml** - configuration
+**sample_app_kafka_service.py** - some example on how to override the base service
+**sample_app_kafka_xpcontroller.py** - initialize services and contain some business logic (rpc response entry point
+example)
 
-* _initializeAppsBeforeRouters_: must be implemented in your xpcontroller class so your apps (if any) rpc_handler
-  function can
-  be prepared
-* _initializeRouters_: must be implemented, this part describes what kind of channels will be activated and how will
-  they behave, you can implement your own solution as well based on the default routers
+# Running
 
-### Publish a message to the rpc_listener (external tool)
+python -m xposer.sample_app.rpc_kafka.sample_app_kafka
+--config=xposer/sample_app/rpc_kafka/sample_app_kafka_config.yaml
 
+## Publish 
+Publish a message to the rpc_listener (external tool)
 _assume the topic name is "router_inbound"_
 echo '{"foo":"bar"}' | kafkacat -P -b localhost:9092 -t router_inbound
 
-### Check if topic is working (external tool)
-
+## Receive
+Check if topic is working (external tool)
 kafkacat -C -b localhost:9092 -t router_outbound

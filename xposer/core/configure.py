@@ -162,7 +162,6 @@ class Configurator:
 
     @staticmethod
     def parseConfig(config_filename):
-        print(config_filename)
 
         if config_filename is None:
             raise EnvironmentError("  environment variable is not set.")

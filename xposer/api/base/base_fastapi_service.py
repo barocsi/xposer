@@ -53,8 +53,7 @@ class BaseFastApiService(BaseService):
                                 log_level="debug",
                                 log_config=None
                                 )
-        loop = asyncio.get_event_loop()
         server = uvicorn.Server(config)
         server_task = asyncio.create_task(server.serve())
-        server_task.set_name("AIOProducer::Poll")
+        server_task.set_name("Fastapi::Service")
         return server

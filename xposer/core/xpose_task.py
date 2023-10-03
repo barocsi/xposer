@@ -2,6 +2,7 @@ import asyncio
 import inspect
 import logging
 import threading
+import traceback
 from asyncio import Event
 from typing import Any, Callable, Optional, TypeVar, Union
 
@@ -12,22 +13,42 @@ from xposer.core.context import Context
 T = TypeVar('T', bound='MyClass')
 
 
+def thread_exception_handler(args):
+    print("Exception in thread:", args['thread'].name)
+    traceback.print_exception(args['exc_type'], args['exc_value'], args['traceback'])
+
+
+threading.excepthook = thread_exception_handler
+
+
 class XPTask:
 
     @staticmethod
     async def cancel_tasks_for_loop(ctx, loop, timeout=1):
+        current_loop = asyncio.get_running_loop()
         pending = asyncio.all_tasks(loop=loop)
-
         for task in pending:
             task.cancel()
-
         try:
-            await asyncio.wait_for(asyncio.gather(*pending, return_exceptions=True), timeout)
+            if loop == current_loop:
+                await asyncio.wait_for(asyncio.gather(*pending, return_exceptions=True), timeout)
+            else:
+                future = asyncio.run_coroutine_threadsafe(
+                    asyncio.wait_for(
+                        asyncio.gather(*pending, return_exceptions=True),
+                        timeout
+                    ),
+                    loop
+                )
+                future.result()
         except asyncio.TimeoutError:
             ctx.logger.warn(f"Tasks did not cancel within {timeout} seconds.")
         except asyncio.CancelledError:
             ctx.logger.warn("Task was cancelled, this is expected behavior.")
+        except Exception as e:
+            print(e)
         finally:
+            ...
             await loop.shutdown_asyncgens()
 
         # Recheck for remaining tasks
@@ -73,11 +94,16 @@ class XPTask:
 
     def run_loop_in_thread(self, to_be_threadified_func: Callable) -> None:
         async def coroutine_wrapper():
-            if inspect.iscoroutinefunction(to_be_threadified_func):
-                await to_be_threadified_func()
-            else:
-                to_be_threadified_func()
-            self.initialization_callback()
+            try:
+                if inspect.iscoroutinefunction(to_be_threadified_func):
+                    await to_be_threadified_func()
+                else:
+                    to_be_threadified_func()
+            except Exception as e:
+                if self.ctx.exception_queue:
+                    self.ctx.exception_queue.put_nowait(e)
+            finally:
+                self.initialization_callback()
 
         # Create a new event loop
         self.wrapped_threaded_func_task_loop = asyncio.new_event_loop()
@@ -86,14 +112,16 @@ class XPTask:
         # Set the event loop for this context
         asyncio.set_event_loop(self.wrapped_threaded_func_task_loop)
 
-        # Set exception handler
+        # Set exception handler for indefinitely running create_task or gather commands
         self.wrapped_threaded_func_task_loop.set_exception_handler(self.handle_task_loop_exception)
 
         # Create a new task to run the provided function
+
         self.wrapped_threaded_func_task = self.wrapped_threaded_func_task_loop.create_task(coroutine_wrapper())
         self.wrapped_threaded_func_task.set_name("XPTASK:WrappedThreadedFunctionCoroutine")
 
         # Run the event loop indefinitely
+        # self.wrapped_threaded_func_task_loop.run_forever()
         self.wrapped_threaded_func_task_loop.run_forever()
 
     def startup(self,

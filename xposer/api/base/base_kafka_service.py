@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 import json
-from typing import Any, Callable
+from typing import Callable
 
 from xposer.api.base.base_kafka_aiolib import AIOConsumer, AIOProducer
 from xposer.api.base.base_service import BaseService
@@ -15,15 +15,13 @@ class BaseKafkaService(BaseService):
         _cancelled: bool = False
 
     async def start_service(self,
-                            app: Any,
                             server_string: str,
                             group_id: str,
                             inbound_topic: str,
                             outbound_topic: str,
                             exception_topic: str,
                             handler_func: Callable = None,
-                            produce_on_result: bool = False,
-                            callback=None):
+                            produce_on_result: bool = False):
 
         self._cancelled = False
 
@@ -45,9 +43,11 @@ class BaseKafkaService(BaseService):
         }
 
         async def consumer_handler_func(data):
-            correlation_id = data.get('correlation_id', 'N/A')
+            """Warning: This is non thread-safe"""
+            correlation_id = None
+            if isinstance(data, dict):
+                correlation_id = data.get('correlation_id', 'N/A')
             try:
-                # The handler funct must be awaited (transactional)
                 processed_data = await handler_func(data)
                 response = {
                     'result': processed_data,
@@ -69,7 +69,10 @@ class BaseKafkaService(BaseService):
 
         # Initiate AIOProducer and AIOConsumer
         self._producer = AIOProducer(producer_config)
-        self._consumer = AIOConsumer(consumer_config, consumer_handler_func, inbound_topics=[inbound_topic])
+        self._consumer = AIOConsumer(consumer_config,
+                                     consumer_handler_func,
+                                     inbound_topics=[inbound_topic],
+                                     exception_queue=self.ctx.exception_queue)
         self.ctx.logger.info(f"Service initialized successfully. Listening on topic: {inbound_topic}.")
 
     async def stop_router(self):

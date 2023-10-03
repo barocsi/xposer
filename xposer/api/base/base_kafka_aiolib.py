@@ -1,6 +1,7 @@
 import asyncio
 import json
-from typing import List
+from concurrent.futures import ThreadPoolExecutor
+from queue import Queue
 
 from confluent_kafka import Consumer, KafkaException, Producer
 
@@ -40,31 +41,47 @@ class AIOProducer:
 
 
 class AIOConsumer:
-    def __init__(self, configs, handler_func, inbound_topics: List[str], loop=None):
+    def __init__(self,
+                 configs,
+                 handler_func,
+                 inbound_topics: list,
+                 exception_queue: Queue,
+                 loop=None):
         self._loop = loop or asyncio.get_event_loop()
         self._consumer = Consumer(configs)
+        self._exception_queue = exception_queue
         self._consumer.subscribe(inbound_topics)
-        self._consume_task = self._loop.create_task(self._consume_loop())
-        self._consume_task.set_name("AIOConsumer::Consume")
         self._handler_func = handler_func
         self._cancelled = False
+        self._executor = ThreadPoolExecutor(max_workers=1)
+        self._consume_task = self._loop.create_task(self._consume_loop())
+        self._consume_task.set_name("AIOConsumer::Consume")
 
     async def _handle_and_commit(self, msg):
-        if msg.value():
-            data = json.loads(msg.value().decode('utf-8'))
-        else:
-            raise Exception(f"Missing value from the message", msg)
+        raw_value = msg.value().decode('utf-8') if msg.value() else None
+        try:
+            data = json.loads(raw_value)
+        except json.JSONDecodeError:
+            data = raw_value  # Continue with the raw string if it's not JSON-decodable
+
+        if not data:
+            raise Exception("Missing value from the message", msg)
+
         await self._handler_func(data)
-        print('committed')
         self._consumer.commit(message=msg)
 
     async def _consume_loop(self):
         while not self._cancelled:
-            msg = self._consumer.poll(0.1)
-            if msg:
-                await self._handle_and_commit(msg)
+            try:
+                msg = await self._loop.run_in_executor(self._executor, self._consumer.poll, 0.1)
+                if msg:
+                    await self._handle_and_commit(msg)
+            except Exception as e:
+                if self._exception_queue:
+                    self._exception_queue.put_nowait(e)
 
     def close(self):
         self._cancelled = True
-        if self._consume_task:  # Ensure the task is available before trying to cancel
+        self._executor.shutdown()
+        if self._consume_task:
             self._consume_task.cancel()

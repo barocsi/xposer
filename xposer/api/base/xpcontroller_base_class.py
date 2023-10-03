@@ -16,9 +16,7 @@ class XPControllerBaseClass(AbstractXPController, ABC):
     def __init__(self, ctx: Context):
         super().__init__(ctx)
         self.config = self.mergeConfigurationFromPrefix()
-        self.kafka_router: BaseKafkaService | Any = None
-        self.socket_router: Any = None
-        self.http_router: BaseFastApiService = None
+        #TODO self.socket_router: Any = None
         self.xpcontroller_conf_class: BaseModel
         self.services: List[BaseService] = []
 
