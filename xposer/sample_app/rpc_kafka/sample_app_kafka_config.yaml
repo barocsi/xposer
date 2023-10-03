@@ -1,11 +1,11 @@
 # boot and xpcontroller
-xpcore_xpcontroller_module_name: "xposer.sample_app.rpc_kafka.sample_app_kafka_xpcontroller"
-xpcore_xpcontroller_class_name: "SampleAppKafkaXPController"
-xpcore_highlevel_variable: "passed"
-xpcore_log_to_console_enabled: "true"
-xpcore_log_to_console_loglevel: "DEBUG"
-xpcore_log_to_kafka_enabled: "true"
-xpcore_log_to_kafka_server_string: "0.0.0.0:9092"
+xp_xpcontroller_module_name: "xposer.sample_app.rpc_kafka.sample_app_kafka_xpcontroller"
+xp_xpcontroller_class_name: "SampleAppKafkaXPController"
+xp_highlevel_variable: "passed"
+xp_log_to_console_enabled: "true"
+xp_log_to_console_loglevel: "DEBUG"
+xp_log_to_kafka_enabled: "true"
+xp_log_to_kafka_server_string: "0.0.0.0:9092"
 
 # Built-in config
 xpcontroller_kafka_inbound_topic: "router_inbound"

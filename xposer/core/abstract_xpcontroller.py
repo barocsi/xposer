@@ -31,19 +31,15 @@ class AbstractXPController(ABC, Generic[T]):
         self._ctx = value
 
     @abstractmethod
-    async def startXPControllerServices(self) -> None:
-        ...
-
-    @abstractmethod
-    async def tearDownXPControllerServices(self) -> None:
-        ...
-
-    @abstractmethod
-    def mergeConfigurationFromPrefix(self) -> T:
+    async def startXPController(self) -> None:
         ...
 
     @abstractmethod
     async def tearDownXPController(self) -> None:
+        ...
+
+    @abstractmethod
+    def mergeConfigurationFromPrefix(self) -> T:
         ...
 
     @abstractmethod

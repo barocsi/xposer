@@ -13,13 +13,6 @@ from xposer.core.context import Context
 T = TypeVar('T', bound='MyClass')
 
 
-def thread_exception_handler(args):
-    print("Exception in thread:", args['thread'].name)
-    traceback.print_exception(args['exc_type'], args['exc_value'], args['traceback'])
-
-
-threading.excepthook = thread_exception_handler
-
 
 class XPTask:
 
@@ -124,6 +117,7 @@ class XPTask:
         # self.wrapped_threaded_func_task_loop.run_forever()
         self.wrapped_threaded_func_task_loop.run_forever()
 
+
     def startup(self,
                 to_be_threadified_func: Callable,
                 initialization_callback: Callable,
@@ -142,6 +136,7 @@ class XPTask:
         self.wrapped_threaded_func_task_slug = task_slug
         self.logger.debug("Creating task in a new thread")
         self.thread = threading.Thread(target=self.run_loop_in_thread, args=(to_be_threadified_func,))
+
         self.thread.daemon = True
         self.thread.start()
 

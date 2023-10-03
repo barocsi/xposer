@@ -55,11 +55,41 @@ config.yaml, environment or command line, you can do it like:
 
 so your app_config_merged will contain `custom_param = 'foobar'`
 
-## Facades
+## Asyncio and Threading
 
-A Facade is a small component that is called (based on the configuration parameters) and is responsible to initialize
-your application logic.
-The facade must be implemented by the developer using the following implementations:
+Xposer creates a main loop and through creating XPTask it creates a new thread and runs the required entry point fn
+of the XPControllers start services
+
+## Controllers
+
+An XPController is a small component that responsible to initialize the services and your core application logic/pkgs
+The XPController must be implemented by the developer
+XPController has two main implementable method:
+
+`@abstractmethod
+async def startXPController(self) -> None:`
+
+`@abstractmethod
+async def tearDownXPController(self) -> None:`
+
+both must be implemented keeping mind that the XPController is running within its own thread and is responsible for the
+graceful shutdown of its internal business logic
+
+## Exceptions
+
+### async/await
+
+async/await exceptions must be caught inline using try/catch
+
+### non awaited tasks
+
+loop.create_task(...) exceptions caught loop exception handlers
+these tasks are not gathered and possibly run forever
+
+### threaded tasks/processes
+
+threaded functions are always awaited and exceptions are routed to the main thread using threadsafe Queue.queue passed
+downstream using explicit Context propagation
 
 ## Docker
 
@@ -78,7 +108,6 @@ pip install
 python setup.py sdist --dist-dir /dists
 
 ## Use package in other projects
-
 
 ## Use this distribution
 

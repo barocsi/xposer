@@ -1,11 +1,11 @@
 # boot and xpcontroller
-xpcore_xpcontroller_module_name: "xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http_xpcontroller"
-xpcore_xpcontroller_class_name: "SampleAppHttpXPController"
-xpcore_highlevel_variable: "passed"
-xpcore_log_to_console_enabled: "true"
-xpcore_log_to_console_loglevel: "DEBUG"
-xpcore_log_to_kafka_enabled: "true"
-xpcore_log_to_kafka_server_string: "0.0.0.0:9092"
+xp_xpcontroller_module_name: "xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http_xpcontroller"
+xp_xpcontroller_class_name: "SampleAppHttpXPController"
+xp_highlevel_variable: "passed"
+xp_log_to_console_enabled: "true"
+xp_log_to_console_loglevel: "DEBUG"
+xp_log_to_kafka_enabled: "true"
+xp_log_to_kafka_server_string: "0.0.0.0:9092"
 
 # XPController level config
 xpcontroller_someparam: "bak"

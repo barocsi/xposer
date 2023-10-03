@@ -23,11 +23,11 @@ class XPControllerBaseClass(AbstractXPController, ABC):
     def mergeConfigurationFromPrefix(self) -> BaseModel:
         return BaseModel.model_construct()
 
-    async def startXPControllerServices(self):
+    async def startXPController(self):
+        raise NotImplementedError
+
+    async def tearDownXPController(self):
         raise NotImplementedError
 
     async def asyncInit(self):
         ...
-
-    async def tearDownXPController(self):
-        raise NotImplementedError

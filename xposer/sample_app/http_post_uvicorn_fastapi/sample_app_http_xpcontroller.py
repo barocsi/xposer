@@ -40,14 +40,7 @@ class SampleAppHttpXPController(XPControllerBaseClass):
                                                       validate=True,
                                                       strict=True)
 
-    def handle_task_exception(self, task):
-        try:
-            task.result()
-        except asyncio.TimeoutError:
-            raise ValueError("The FastAPI service did not start within 30 seconds!")
-
     async def start_fastapi_service(self, callback):
-        """Creates the fastapi service"""
         self.uvicorn_server = await self.http_router.startService(
             self.config.uvicorn_host,
             self.config.uvicorn_port,
@@ -56,19 +49,25 @@ class SampleAppHttpXPController(XPControllerBaseClass):
             callback=callback,
         )
 
-    async def tearDownXPControllerServices(self):
+    async def tearDownXPController(self):
         self.ctx.logger.info("tearDownXPController called")
         self.uvicorn_server.should_exit = True
         await asyncio.sleep(1)
 
-    async def startXPControllerServices(self):
+    def handle_timeout_exception(self, task):
+        try:
+            task.result()
+        except asyncio.TimeoutError:
+            raise ValueError("The FastAPI service did not start within 30 seconds!")
+
+    async def startXPController(self):
         self.http_router = BaseFastApiService(self.ctx)
         future = asyncio.Future()
         fastapi_service_task = asyncio.create_task(self.start_fastapi_service(callback=future.set_result))
         fastapi_service_task.set_name("SampleAppHttpController:StartFastApiServiceTask")
         timeout_task = asyncio.create_task(asyncio.wait_for(future, timeout=3))
         timeout_task.set_name("SampleAppHttpXPController::FastApiServiceTimeoutTask")
-        timeout_task.add_done_callback(self.handle_task_exception)
+        timeout_task.add_done_callback(self.handle_timeout_exception)
         await future
 
     def afterInititalization(self):

@@ -193,7 +193,7 @@ class Configurator:
 
     @staticmethod
     def buildConfig() -> ConfigModel:
-        ROOT_PREFIX: str = 'xpcore_'
+        ROOT_PREFIX: str = 'xp_'
         # Determine configuration_filename source and value
         parser = argparse.ArgumentParser()
         parser.add_argument("--config",

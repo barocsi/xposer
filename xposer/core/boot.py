@@ -2,6 +2,8 @@ import asyncio
 import queue
 import signal
 import sys
+import threading
+import traceback
 from typing import Any
 
 from xposer.core.configure import Configurator
@@ -18,9 +20,24 @@ class Boot:
         self.shutdown_in_progress = False
 
     def _sync_shutdown_handler(self, *_: Any) -> None:
-        self.ctx.logger.warning("\n*** CLI Shutdown signal received ***")
+        self.ctx.logger.warning("\n*** CLI/Sync Shutdown signal received ***")
         if not self.shutdown_in_progress:
-            asyncio.create_task(self.shutdown())
+            try:
+                asyncio.get_running_loop()
+                asyncio.create_task(self.shutdown())
+            except RuntimeError:
+                sys.exit()
+
+    def thread_exception_handler(self, args):
+        try:
+            thread_name = args.thread.name if args.thread else "Unknown"
+            print(f"Exception in thread: {thread_name}")
+            tb = args.exc_value.__traceback__
+            traceback.print_exception(args.exc_type, args.exc_value, tb)
+        except Exception as e:
+            print(f"Failed to handle exception in thread: {e}")
+        finally:
+            self._sync_shutdown_handler()
 
     async def shutdown(self) -> None:
         if self.shutdown_in_progress:
@@ -70,6 +87,7 @@ class Boot:
         xpcontroller = XPControllerFactory.make(context)
         await xpcontroller.asyncInit()
         asyncio.get_event_loop().set_exception_handler(self.handle_loop_exceptions)
+        threading.excepthook = self.thread_exception_handler
         xptask_initialization_future = asyncio.Future()
         xptask = XPTask(self.ctx)
 
@@ -77,13 +95,13 @@ class Boot:
             loop.call_soon_threadsafe(xptask_initialization_future.set_result, None)
 
         xptask.startup(
-            to_be_threadified_func=xpcontroller.startXPControllerServices,
+            to_be_threadified_func=xpcontroller.startXPController,
             initialization_callback=initialization_callback,
-            teardown_func=xpcontroller.tearDownXPControllerServices,
+            teardown_func=xpcontroller.tearDownXPController,
             main_event_loop=loop,
             exception_callback=None,
             custom_logger=logger,
-            task_slug='boot_xpcontroller_startXPControllerServices',
+            task_slug='boot_xpcontroller_startXPController',
             re_raise_exception=True
         )
         await xptask_initialization_future
