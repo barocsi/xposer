@@ -74,6 +74,3 @@ class SampleAppKafkaXPController(XPControllerBaseClass):
         timeout_task.set_name("SampleAppKafkaXPController:KafkaServiceTimeoutTask")
         timeout_task.add_done_callback(self.handle_timeout_exception)
         await future
-
-    def afterInititalization(self):
-        self.ctx.logger.debug(f"XPController starting")

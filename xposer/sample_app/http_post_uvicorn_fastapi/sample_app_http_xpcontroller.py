@@ -69,6 +69,3 @@ class SampleAppHttpXPController(XPControllerBaseClass):
         timeout_task.set_name("SampleAppHttpXPController::FastApiServiceTimeoutTask")
         timeout_task.add_done_callback(self.handle_timeout_exception)
         await future
-
-    def afterInititalization(self):
-        self.ctx.logger.debug(f"XPController starting")
