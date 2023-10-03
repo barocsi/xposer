@@ -31,13 +31,18 @@ class Boot:
     def thread_exception_handler(self, args):
         try:
             thread_name = args.thread.name if args.thread else "Unknown"
-            print(f"Exception in thread: {thread_name}")
+            self.ctx.logger.error(f"Exception in thread: {thread_name}")
             tb = args.exc_value.__traceback__
             traceback.print_exception(args.exc_type, args.exc_value, tb)
+            if threading.current_thread().name == "MainThread":
+                self._sync_shutdown_handler()
+            else:
+                if self.ctx.exception_queue:
+                    self.ctx.exception_queue.put_nowait(args)
+                else:
+                    sys.exit(0)
         except Exception as e:
             print(f"Failed to handle exception in thread: {e}")
-        finally:
-            self._sync_shutdown_handler()
 
     async def shutdown(self) -> None:
         if self.shutdown_in_progress:

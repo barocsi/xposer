@@ -2,7 +2,6 @@ import asyncio
 import inspect
 import logging
 import threading
-import traceback
 from asyncio import Event
 from typing import Any, Callable, Optional, TypeVar, Union
 
@@ -13,35 +12,37 @@ from xposer.core.context import Context
 T = TypeVar('T', bound='MyClass')
 
 
-
 class XPTask:
 
     @staticmethod
     async def cancel_tasks_for_loop(ctx, loop, timeout=1):
         current_loop = asyncio.get_running_loop()
-        pending = asyncio.all_tasks(loop=loop)
-        for task in pending:
-            task.cancel()
+        pending = asyncio.all_tasks(loop=loop)  # Get all pending tasks
+        if len(pending) == 0:
+            await loop.shutdown_asyncgens()
+            return
         try:
+            # Cancel all pending tasks
+            for task in pending:
+                task.cancel()
+
+            # If the loop is the current loop, await the tasks in the current loop
             if loop == current_loop:
                 await asyncio.wait_for(asyncio.gather(*pending, return_exceptions=True), timeout)
+
+            # If the loop is not the current loop, run in a threadsafe manner
             else:
                 future = asyncio.run_coroutine_threadsafe(
-                    asyncio.wait_for(
-                        asyncio.gather(*pending, return_exceptions=True),
-                        timeout
-                    ),
-                    loop
-                )
-                future.result()
+                    asyncio.wait_for(asyncio.gather(*pending, return_exceptions=True), timeout), loop)
+                return future.result(timeout=timeout)
         except asyncio.TimeoutError:
             ctx.logger.warn(f"Tasks did not cancel within {timeout} seconds.")
         except asyncio.CancelledError:
             ctx.logger.warn("Task was cancelled, this is expected behavior.")
         except Exception as e:
-            print(e)
+            print("LOFASZ")
+            print(e)  # Handle other exceptions
         finally:
-            ...
             await loop.shutdown_asyncgens()
 
         # Recheck for remaining tasks
@@ -116,7 +117,6 @@ class XPTask:
         # Run the event loop indefinitely
         # self.wrapped_threaded_func_task_loop.run_forever()
         self.wrapped_threaded_func_task_loop.run_forever()
-
 
     def startup(self,
                 to_be_threadified_func: Callable,
