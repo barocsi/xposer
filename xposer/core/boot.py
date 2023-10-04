@@ -6,6 +6,7 @@ import threading
 import traceback
 from typing import Any
 
+from xposer.core.completed_exception import CompletedException
 from xposer.core.configure import Configurator
 from xposer.core.context import Context
 from xposer.core.logger import get_logger
@@ -65,7 +66,10 @@ class Boot:
         while not self.shutdown_event.is_set():
             try:
                 exception = self.ctx.exception_queue.get_nowait()
-                self.ctx.logger.error(f"Exception: {exception}")
+                if isinstance(exception, CompletedException):
+                    self.ctx.logger.info(f"Controller completed: {exception.args[0]}")
+                else:
+                    self.ctx.logger.error(f"Exception: {exception}")
                 await self.shutdown()
             except (queue.Empty, asyncio.CancelledError):
                 ...

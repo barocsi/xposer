@@ -5,6 +5,7 @@ from pydantic import Field
 from xposer.api.base.base_fastapi_service import BaseFastApiService
 from xposer.api.base.base_fastapi_service_config_model import BaseFastApiRouterConfigModel
 from xposer.api.base.xpcontroller_base_class import XPControllerBaseClass
+from xposer.core.completed_exception import CompletedException
 from xposer.core.configure import Configurator
 from xposer.core.context import Context
 from xposer.sample_app.http_post_uvicorn_fastapi.routers.sample_app_http_service import SampleAppHTTPService
@@ -51,7 +52,8 @@ class SampleAppHttpXPController(XPControllerBaseClass):
 
     async def tearDownXPController(self):
         self.ctx.logger.info("tearDownXPController called")
-        self.uvicorn_server.should_exit = True
+        if self.uvicorn_server:
+            self.uvicorn_server.should_exit = True
         await asyncio.sleep(1)
 
     def handle_timeout_exception(self, task):
@@ -61,6 +63,7 @@ class SampleAppHttpXPController(XPControllerBaseClass):
             raise ValueError("The FastAPI service did not start within 30 seconds!")
 
     async def startXPController(self):
+        raise CompletedException(self.__class__.__name__)
         self.http_router = BaseFastApiService(self.ctx)
         future = asyncio.Future()
         fastapi_service_task = asyncio.create_task(self.start_fastapi_service(callback=future.set_result))
