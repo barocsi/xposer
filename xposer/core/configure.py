@@ -13,22 +13,29 @@ T = TypeVar('T')
 
 
 class Configurator:
-    """
-    @
-    FUNCTION: shallow_dict_from_object_with_prefix_removal
-    DESCRIPTION:
-        This function transforms a given object (or dictionary) by retaining only the keys that start with a specified prefix.
-        The prefix is then removed from the key in the resultant dictionary.
-        If `strict` is set to False, keys that do not match the prefix will also be included in the returned dictionary.
 
-    PARAMETERS:
-        source: Union[Any, Dict[str, Any]] - The source object or dictionary to be transformed.
-        prefix: str (default='') - The prefix to check against each key.
-        strict: bool (default=False) - If set to True, only keys with the specified prefix will be included.
+    @staticmethod
+    def convert_to_bool(value: Union[bool, str, int]) -> bool:
+        """Convert various representations of boolean to actual boolean."""
+        value_map = {
+            'true': True, 'True': True, '1': True, 1: True,
+            'false': False, 'False': False, '0': False, 0: False
+        }
+        return value_map.get(value, value)
 
-    RETURNS: Dict[str, Any] - A dictionary derived from the source object/dictionary after applying the specified transformations.
-    @
-    """
+    @staticmethod
+    def normalize_bool_fields(config_model: BaseSettings):
+        """Recursively iterate through Pydantic model and convert specific fields to boolean."""
+        for field_name, field_value in config_model.dict().items():
+            field_type = config_model.__annotations__.get(field_name, None)
+
+            if isinstance(field_value, BaseSettings):
+                # Recursively normalize nested BaseSettings
+                Configurator.normalize_bool_fields(field_value)
+
+            if field_type is bool:
+                setattr(config_model, field_name, Configurator.convert_to_bool(field_value))
+        return config_model
 
     @staticmethod
     def shallow_dict_from_object_with_prefix_removal(source: Union[Any, Dict[str, Any]],
@@ -241,6 +248,9 @@ class Configurator:
             strict=False)
 
         # Now do the validation business
-        ConfigModel.model_validate(cli_overridden_configuration)
+        ConfigModel.model_validate(cli_overridden_configuration, strict=True)
 
-        return cli_overridden_configuration
+        # Normalize bool fields
+        normalized_configuration = Configurator.normalize_bool_fields(cli_overridden_configuration)
+
+        return normalized_configuration

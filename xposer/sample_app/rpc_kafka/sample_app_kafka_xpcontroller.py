@@ -24,7 +24,7 @@ class SampleAppKafkaXPController(XPControllerBaseClass):
     def __init__(self, ctx: Context):
         self.config_prefix: str = "xpcontroller_"
         self.kafka_router: BaseKafkaService | Any = None
-        xpcontroller_conf_class: SampleAppKafkaXPControllerConfigModel
+        self.xpcontroller_conf_class: SampleAppKafkaXPControllerConfigModel
         super().__init__(ctx)
 
     def mergeConfigurationFromPrefix(self) -> SampleAppKafkaXPControllerConfigModel:
