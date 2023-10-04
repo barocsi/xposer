@@ -19,6 +19,7 @@ xposer/core/__init__.py
 xposer/core/abstract_handler.py
 xposer/core/abstract_xpcontroller.py
 xposer/core/boot.py
+xposer/core/completed_exception.py
 xposer/core/configuration_model.py
 xposer/core/configure.py
 xposer/core/context.py

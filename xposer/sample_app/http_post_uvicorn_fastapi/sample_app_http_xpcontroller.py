@@ -63,7 +63,7 @@ class SampleAppHttpXPController(XPControllerBaseClass):
             raise ValueError("The FastAPI service did not start within 30 seconds!")
 
     async def startXPController(self):
-        raise CompletedException(self.__class__.__name__)
+        #raise CompletedException(self.__class__.__name__)
         self.http_router = BaseFastApiService(self.ctx)
         future = asyncio.Future()
         fastapi_service_task = asyncio.create_task(self.start_fastapi_service(callback=future.set_result))
