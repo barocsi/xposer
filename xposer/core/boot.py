@@ -103,6 +103,7 @@ class Boot:
         def initialization_callback():
             loop.call_soon_threadsafe(xptask_initialization_future.set_result, None)
 
+        logger.info(f"Boot sequence completed. Starting XPController {xpcontroller.name}")
         xptask.startup(
             to_be_threadified_func=xpcontroller.startXPController,
             initialization_callback=initialization_callback,
@@ -120,7 +121,7 @@ class Boot:
         for s in (signal.SIGTERM, signal.SIGINT):
             signal.signal(s, self._sync_shutdown_handler)
 
-        logger.info(f"Boot sequence completed. XPController {xpcontroller.name} started")
+        logger.info(f"XPController {xpcontroller.name} sync process complete. Async tasks might be in progress.")
 
         try:
             monitor_task = asyncio.create_task(self.monitor_exceptions())
