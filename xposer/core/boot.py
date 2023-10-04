@@ -45,6 +45,22 @@ class Boot:
         except Exception as e:
             print(f"Failed to handle exception in thread: {e}")
 
+    async def monitor_exceptions(self) -> None:
+        while not self.shutdown_event.is_set():
+            try:
+                exception = self.ctx.exception_queue.get_nowait()
+                if isinstance(exception, CompletedException):
+                    self.ctx.logger.info(f"Controller completed: {exception.args[0]}")
+                else:
+                    self.ctx.logger.error(f"Exception: {exception}")
+                    # Print exception traceback
+                    tb = exception.__traceback__
+                    traceback.print_exception(type(exception), exception, tb)
+
+                await self.shutdown()
+            except (queue.Empty, asyncio.CancelledError):
+                await asyncio.sleep(0.1)
+
     async def shutdown(self) -> None:
         if self.shutdown_in_progress:
             return
@@ -61,19 +77,6 @@ class Boot:
         await XPTask.cancel_tasks_for_loop(self.ctx, asyncio.get_event_loop())
         self.ctx.logger.debug(f"Main shutdown sequence completed")
         sys.exit()
-
-    async def monitor_exceptions(self) -> None:
-        while not self.shutdown_event.is_set():
-            try:
-                exception = self.ctx.exception_queue.get_nowait()
-                if isinstance(exception, CompletedException):
-                    self.ctx.logger.info(f"Controller completed: {exception.args[0]}")
-                else:
-                    self.ctx.logger.error(f"Exception: {exception}")
-                await self.shutdown()
-            except (queue.Empty, asyncio.CancelledError):
-                ...
-                await asyncio.sleep(0.1)
 
     def handle_loop_exceptions(self, loop: asyncio.AbstractEventLoop, context: dict) -> None:
         task = context.get('future')
