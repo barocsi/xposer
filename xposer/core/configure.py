@@ -165,7 +165,8 @@ class Configurator:
                 elif isinstance(target, (BaseModel, BaseSettings)):
                     type(target).model_validate(result_obj)
 
-        return result_obj
+        bool_normalized_obj = Configurator.normalize_bool_fields(result_obj)
+        return bool_normalized_obj
 
     @staticmethod
     def parseConfig(config_filename):
@@ -251,6 +252,6 @@ class Configurator:
         ConfigModel.model_validate(cli_overridden_configuration, strict=True)
 
         # Normalize bool fields
-        normalized_configuration = Configurator.normalize_bool_fields(cli_overridden_configuration)
+        bool_normalized_configuration = Configurator.normalize_bool_fields(cli_overridden_configuration)
 
-        return normalized_configuration
+        return bool_normalized_configuration
