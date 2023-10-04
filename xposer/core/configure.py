@@ -24,16 +24,31 @@ class Configurator:
         return value_map.get(value, value)
 
     @staticmethod
-    def normalize_bool_fields(config_model: BaseSettings):
-        """Recursively iterate through Pydantic model and convert specific fields to boolean."""
+    def normalize_bool_fields(config_model: Union[BaseSettings, BaseModel]):
+        if not isinstance(config_model, (BaseSettings, BaseModel)):
+            raise ValueError("Only Pydantic BaseSettings/BaseModel supported.")
+
         for field_name, field_value in config_model.dict().items():
             field_type = config_model.__annotations__.get(field_name, None)
 
-            if isinstance(field_value, BaseSettings):
-                # Recursively normalize nested BaseSettings
+            # Recursively normalize nested BaseSettings/BaseModel
+            if isinstance(field_value, (BaseSettings, BaseModel)):
                 Configurator.normalize_bool_fields(field_value)
 
-            if field_type is bool:
+            # Handle lists and nested collections
+            elif isinstance(field_value, list):
+                new_list = []
+                for item in field_value:
+                    if isinstance(item, (BaseSettings, BaseModel)):
+                        Configurator.normalize_bool_fields(item)
+                    elif isinstance(item, bool):
+                        new_list.append(Configurator.convert_to_bool(item))
+                    else:
+                        new_list.append(item)
+                setattr(config_model, field_name, new_list)
+
+            # Convert bool fields
+            elif field_type is bool:
                 setattr(config_model, field_name, Configurator.convert_to_bool(field_value))
         return config_model
 
