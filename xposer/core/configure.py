@@ -1,5 +1,6 @@
 import argparse
 import os
+import warnings
 from typing import Any, Type, TypeVar
 from typing import Dict, Optional, Union
 
@@ -23,34 +24,38 @@ class Configurator:
         }
         return value_map.get(value, value)
 
-    @staticmethod
     def normalize_bool_fields(config_model: Union[BaseSettings, BaseModel]):
-        if not isinstance(config_model, (BaseSettings, BaseModel)):
-            raise ValueError("Only Pydantic BaseSettings/BaseModel supported.")
+        """Filter bool type str warning (we are fixing it below so it's expected)"""
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=UserWarning)
+            for field_name, field_value in config_model.model_dump().items():
+                field_type = config_model.__annotations__.get(field_name, None)
 
-        for field_name, field_value in config_model.dict().items():
-            field_type = config_model.__annotations__.get(field_name, None)
+                # Handle nested Pydantic models
+                if isinstance(field_value, (BaseSettings, BaseModel)):
+                    Configurator.normalize_bool_fields(field_value)
 
-            # Recursively normalize nested BaseSettings/BaseModel
-            if isinstance(field_value, (BaseSettings, BaseModel)):
-                Configurator.normalize_bool_fields(field_value)
+                # Handle lists, traverse into dicts or Pydantic models
+                elif isinstance(field_value, list):
+                    new_list = []
+                    for item in field_value:
+                        if isinstance(item, dict):
+                            new_dict = {
+                                k: Configurator.convert_to_bool(v) if isinstance(v, str) and v.lower() in ['true',
+                                                                                                           'false'] else v
+                                for k, v in item.items()}
+                            new_list.append(new_dict)
+                        elif isinstance(item, (BaseSettings, BaseModel)):
+                            Configurator.normalize_bool_fields(item)
+                            new_list.append(item)
+                        else:
+                            new_list.append(item)
+                    setattr(config_model, field_name, new_list)
 
-            # Handle lists and nested collections
-            elif isinstance(field_value, list):
-                new_list = []
-                for item in field_value:
-                    if isinstance(item, (BaseSettings, BaseModel)):
-                        Configurator.normalize_bool_fields(item)
-                    elif isinstance(item, bool):
-                        new_list.append(Configurator.convert_to_bool(item))
-                    else:
-                        new_list.append(item)
-                setattr(config_model, field_name, new_list)
-
-            # Convert bool fields
-            elif field_type is bool:
-                setattr(config_model, field_name, Configurator.convert_to_bool(field_value))
-        return config_model
+                # Convert bool fields
+                elif field_type is bool:
+                    setattr(config_model, field_name, Configurator.convert_to_bool(field_value))
+            return config_model
 
     @staticmethod
     def shallow_dict_from_object_with_prefix_removal(source: Union[Any, Dict[str, Any]],

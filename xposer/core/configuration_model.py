@@ -27,7 +27,7 @@ class ConfigModel(BaseSettings):
                                                 error_messages={
                                                 })
 
-    model_config = ConfigDict(extra='allow')
+    model_config = ConfigDict(extra='allow', arbitrary_types_allowed=True)
 
     @field_validator('log_to_console_loglevel')
     def map_log_level(cls, value):
