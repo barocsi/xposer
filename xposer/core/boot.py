@@ -53,10 +53,11 @@ class Boot:
                     self.ctx.logger.info(f"Controller completed: {exception.args[0]}")
                 else:
                     self.ctx.logger.error(f"Exception: {exception}")
-                    # Print exception traceback
-                    tb = exception.__traceback__
-                    traceback.print_exception(type(exception), exception, tb)
-
+                    try:
+                        tb = exception.exc_value.__traceback__
+                        traceback.print_exception(exception.exc_type, exception.exc_value, tb)
+                    except Exception:
+                        self.ctx.logger.warning("Unable to print monitor_exceptions exception due to ")
                 await self.shutdown()
             except (queue.Empty, asyncio.CancelledError):
                 await asyncio.sleep(0.1)
