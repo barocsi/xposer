@@ -18,14 +18,14 @@ class SampleAppHttpControllerConfigModel(BaseFastApiRouterConfigModel):
 
 
 class SampleAppHttpXPController(XPControllerBaseClass):
-
+    config_prefix: str = "xpcontroller_" # Class level
     def __init__(self, ctx: Context):
-        self.config_prefix: str = "xpcontroller_"
+        super().__init__(ctx)
         self.api_prefix: str = "/api"
         self.uvicorn_server = None
         self.http_router: BaseFastApiService = None
-        self.xpcontroller_conf_class: SampleAppHttpControllerConfigModel
-        super().__init__(ctx)
+        self.config: SampleAppHttpControllerConfigModel = self.config # Type hint
+
 
     def custom_exception_handler(self, loop, context):
         exception = context.get('exception')

@@ -8,7 +8,7 @@ T = TypeVar('T')
 
 class AbstractXPController(ABC, Generic[T]):
     xpcontroller_conf_class: Type[T]
-
+    config_prefix: str
     def __init__(self, ctx: Context):
         self._ctx = ctx
 

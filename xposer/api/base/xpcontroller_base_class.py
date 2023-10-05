@@ -12,7 +12,7 @@ from xposer.core.context import Context
 
 class XPControllerBaseClass(AbstractXPController, ABC):
     name: str = "XPControllerBaseClass"
-
+    config_prefix: str = "xpcontroller_" # Class level
     def __init__(self, ctx: Context):
         super().__init__(ctx)
         self.config = self.mergeConfigurationFromPrefix()
