@@ -6,6 +6,8 @@ import threading
 import traceback
 from typing import Any
 
+from icecream import ic
+
 from xposer.core.completed_exception import CompletedException
 from xposer.core.configure import Configurator
 from xposer.core.context import Context
@@ -54,6 +56,7 @@ class Boot:
                 else:
                     self.ctx.logger.error(f"Exception: {exception}")
                     try:
+                        ic(exception)
                         tb = exception.exc_value.__traceback__
                         traceback.print_exception(exception.exc_type, exception.exc_value, tb)
                     except Exception:

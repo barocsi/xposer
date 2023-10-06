@@ -23,6 +23,7 @@ xposer/core/completed_exception.py
 xposer/core/configuration_model.py
 xposer/core/configure.py
 xposer/core/context.py
+xposer/core/coro_exception.py
 xposer/core/logger.py
 xposer/core/xpcontroller_factory.py
 xposer/core/xpose_task.py

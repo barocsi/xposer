@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import logging
+import sys
 import threading
 from asyncio import Event
 from typing import Any, Callable, Optional, TypeVar, Union
@@ -8,6 +9,7 @@ from typing import Any, Callable, Optional, TypeVar, Union
 import shortuuid
 
 from xposer.core.context import Context
+from xposer.core.coro_exception import CoroException
 
 T = TypeVar('T', bound='MyClass')
 
@@ -95,7 +97,9 @@ class XPTask:
                     to_be_threadified_func()
             except Exception as e:
                 if self.ctx.exception_queue:
-                    self.ctx.exception_queue.put_nowait(e)
+                    exc_type, exc_value, tb = sys.exc_info()
+                    exception = CoroException(exc_type, exc_value, tb)
+                    self.ctx.exception_queue.put_nowait(exception)
             finally:
                 self.initialization_callback()
 
