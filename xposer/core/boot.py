@@ -56,7 +56,6 @@ class Boot:
                 else:
                     self.ctx.logger.error(f"Exception: {exception}")
                     try:
-                        ic(exception)
                         tb = exception.exc_value.__traceback__
                         traceback.print_exception(exception.exc_type, exception.exc_value, tb)
                     except Exception:
