@@ -2,12 +2,25 @@ import json
 import logging
 import os
 import sys
+
 from confluent_kafka import Producer
+from icecream import IceCreamDebugger
+
 from xposer.core.configuration_model import ConfigModel
 
 currentframe = lambda: sys._getframe(3)
 _logging_srcfile = os.path.normcase(logging.addLevelName.__code__.co_filename)
 _this_srcfile = __file__
+
+
+class CustomIC(IceCreamDebugger):
+    def __init__(self, logger):
+        super().__init__()
+        self.logger = logger
+
+    def __call__(self, *args, **kwargs):
+        if self.logger.level == logging.DEBUG:
+            return super().__call__(*args, **kwargs)
 
 
 class XposeLogger(logging.Logger):
@@ -51,13 +64,13 @@ class KafkaLoggingHandler(logging.Handler):
 
 def get_logger(appConfig: ConfigModel):
     logger = logging.getLogger("xpose_logger")
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(appConfig.log_to_console_loglevel)
 
     if appConfig.log_to_console_enabled:
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
         ch.setFormatter(logging.Formatter(
-            f'%(asctime)-25s | %(levelname)-8s | %(name)-15s | %(filename)-30s | %(funcName)-30s \n{"-"*26}» %(levelname)-8s | %(message)s\n'))
+            f'%(asctime)-25s | %(levelname)-8s | %(name)-15s | %(filename)-30s | %(funcName)-30s \n{"-" * 26}» %(levelname)-8s | %(message)s\n'))
         logger.addHandler(ch)
 
     if appConfig.log_to_kafka_enabled:
@@ -70,4 +83,6 @@ def get_logger(appConfig: ConfigModel):
         logger.addHandler(kh)
         logger.debug(f"Logger initialized: {logger.name}")
 
+    global ic
+    ic = CustomIC(logger)
     return logger
