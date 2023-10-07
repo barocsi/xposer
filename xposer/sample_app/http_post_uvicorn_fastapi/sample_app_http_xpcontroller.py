@@ -1,11 +1,10 @@
 import asyncio
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from xposer.api.base.base_fastapi_service import BaseFastApiService
 from xposer.api.base.base_fastapi_service_config_model import BaseFastApiRouterConfigModel
 from xposer.api.base.xpcontroller_base_class import XPControllerBaseClass
-from xposer.core.completed_exception import CompletedException
 from xposer.core.configure import Configurator
 from xposer.core.context import Context
 from xposer.sample_app.http_post_uvicorn_fastapi.routers.sample_app_http_service import SampleAppHTTPService
@@ -16,16 +15,19 @@ class SampleAppHttpControllerConfigModel(BaseFastApiRouterConfigModel):
     uvicorn_host: str = Field(default='localhost')
     uvicorn_port: int = Field(default=8000)
 
+    @field_validator("uvicorn_port")
+    def convert_to_int(cls, value):
+        return int(value)
 
 class SampleAppHttpXPController(XPControllerBaseClass):
-    config_prefix: str = "xpcontroller_" # Class level
+    config_prefix: str = "xpcontroller_"  # Class level
+
     def __init__(self, ctx: Context):
         super().__init__(ctx)
         self.api_prefix: str = "/api"
         self.uvicorn_server = None
         self.http_router: BaseFastApiService = None
-        self.config: SampleAppHttpControllerConfigModel = self.config # Type hint
-
+        self.config: SampleAppHttpControllerConfigModel = self.config  # Type hint
 
     def custom_exception_handler(self, loop, context):
         exception = context.get('exception')
@@ -63,7 +65,7 @@ class SampleAppHttpXPController(XPControllerBaseClass):
             raise ValueError("The FastAPI service did not start within 30 seconds!")
 
     async def startXPController(self):
-        #raise CompletedException(self.__class__.__name__)
+        # raise CompletedException(self.__class__.__name__)
         self.http_router = BaseFastApiService(self.ctx)
         future = asyncio.Future()
         fastapi_service_task = asyncio.create_task(self.start_fastapi_service(callback=future.set_result))

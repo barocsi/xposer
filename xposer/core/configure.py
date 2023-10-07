@@ -171,22 +171,24 @@ class Configurator:
 
         # Validate the object if required
         # Pydantic has a model_validate classmethod, we focus on those cases
+        bool_normalized_obj = Configurator.normalize_bool_fields(result_obj)
+
         if validate:
             if isinstance(target, type):
                 if issubclass(target, Dict):
                     # dont validate a dict type
                     pass
                 else:
-                    target.model_validate(result_obj)
+                    result_obj = target(**bool_normalized_obj.model_dump())
             else:
                 if isinstance(target, Dict):
                     # dont validate a dict instance
                     pass
                 elif isinstance(target, (BaseModel, BaseSettings)):
-                    type(target).model_validate(result_obj)
+                    result_obj = type(target)(**bool_normalized_obj.model_dump())
 
-        bool_normalized_obj = Configurator.normalize_bool_fields(result_obj)
-        return bool_normalized_obj
+
+        return result_obj
 
     @staticmethod
     def parseConfig(config_filename):
@@ -268,10 +270,9 @@ class Configurator:
             validate=False,
             strict=False)
 
-        # Now do the validation business
-        ConfigModel.model_validate(cli_overridden_configuration, strict=True)
-
         # Normalize bool fields
         bool_normalized_configuration = Configurator.normalize_bool_fields(cli_overridden_configuration)
 
-        return bool_normalized_configuration
+        # Now do the validation business
+        validated_configuration = ConfigModel(**bool_normalized_configuration.model_dump(), strict=True)
+        return validated_configuration

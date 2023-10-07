@@ -9,6 +9,7 @@ xp_log_to_kafka_server_string: "0.0.0.0:9092"
 
 # XPController level config
 xpcontroller_someparam: "bak"
+xpcontroller_uvicorn_port: "8001"
 
 # App level config
 xpapp_bar: "baz"
