@@ -3,7 +3,7 @@ from typing import Callable
 
 from fastapi import HTTPException
 
-from cellx.lib.models.dto.response_wrapper_dto import ResponseWrapperDTO
+from xposer.api.base.http.dto.response_wrapper_dto import ResponseWrapperDTO
 
 
 def ResponseWrapperDecorator(func: Callable):

@@ -15,6 +15,12 @@ xposer/api/base/base_kafka_service_config_model.py
 xposer/api/base/base_service.py
 xposer/api/base/expose_cli.py
 xposer/api/base/xpcontroller_base_class.py
+xposer/api/base/http/__init__.py
+xposer/api/base/http/decorators/__init__.py
+xposer/api/base/http/decorators/wrap_response_decorator.py
+xposer/api/base/http/dto/__init__.py
+xposer/api/base/http/dto/request_meta_dto.py
+xposer/api/base/http/dto/response_wrapper_dto.py
 xposer/core/__init__.py
 xposer/core/abstract_handler.py
 xposer/core/abstract_xpcontroller.py
