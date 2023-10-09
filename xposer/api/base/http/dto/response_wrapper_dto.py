@@ -7,4 +7,3 @@ class ResponseWrapperDTO(BaseModel):
     result: str
     exception: Any = None
     data: Any = None
-    meta: dict = {}

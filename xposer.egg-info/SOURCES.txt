@@ -20,6 +20,7 @@ xposer/api/base/http/decorators/__init__.py
 xposer/api/base/http/decorators/wrap_response_decorator.py
 xposer/api/base/http/dto/__init__.py
 xposer/api/base/http/dto/request_meta_dto.py
+xposer/api/base/http/dto/response_dto.py
 xposer/api/base/http/dto/response_wrapper_dto.py
 xposer/core/__init__.py
 xposer/core/abstract_handler.py
