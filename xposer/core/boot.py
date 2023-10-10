@@ -24,6 +24,7 @@ class Boot:
         self.ctx.logger.warning("\n*** CLI/Sync Shutdown signal received ***")
         if not self.shutdown_in_progress:
             try:
+                self.shutdown_in_progress = True
                 asyncio.get_running_loop()
                 asyncio.create_task(self.shutdown())
             except RuntimeError:
