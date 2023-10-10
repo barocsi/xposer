@@ -1,9 +1,12 @@
+MANIFEST.in
 README.md
+requirements.txt
 setup.py
 xposer/__init__.py
 xposer.egg-info/PKG-INFO
 xposer.egg-info/SOURCES.txt
 xposer.egg-info/dependency_links.txt
+xposer.egg-info/requires.txt
 xposer.egg-info/top_level.txt
 xposer/api/__init__.py
 xposer/api/base/__init__.py

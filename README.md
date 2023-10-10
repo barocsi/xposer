@@ -105,7 +105,9 @@ pip install
 
 ## Create local distribution
 
-python setup.py sdist --dist-dir /dists
+pipreqs --force
+pip freeze > requirements.txt
+python setup.py sdist --dist-dir /shared/projects/packages/
 
 ## Use package in other projects
 
