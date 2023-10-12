@@ -30,7 +30,7 @@ class BaseFastApiService(BaseService):
                            routes: List[APIRouter],
                            api_prefix: str = "/api",
                            callback=None):
-        self.fastApi = FastAPI()
+        self.fastApi = FastAPI(tail_slash=True)
         for route in routes:
             self.fastApi.include_router(route, prefix=api_prefix)
 

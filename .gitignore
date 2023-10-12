@@ -21,3 +21,4 @@ pip-delete-this-directory.txt
 /build/
 /xposer.egg-info/
 *.egg-info/
+/wheels/
