@@ -16,7 +16,7 @@ def ResponseWrapperDecorator(ctx):
             except Exception as e:
                 backtrace_info = traceback.format_exc()  # Gets the traceback information
                 ctx.logger.error(
-                    f"FastAPI Internal error occurred: {e}\n{backtrace_info}"
+                    f"FastAPI Internal error occurred @ResponseWrapperDecorator: {e}\n{backtrace_info}"
                     )  # Logging the error with traceback
                 detail = ResponseWrapperDTO(result="error", exception=str(e)).model_dump()
                 raise HTTPException(status_code=500, detail=detail)

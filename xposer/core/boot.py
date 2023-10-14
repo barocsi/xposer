@@ -52,7 +52,7 @@ class Boot:
                 exception = self.ctx.exception_queue.get_nowait()
                 if isinstance(exception, CompletedException):
                     self.ctx.logger.info(f"Controller completed: {exception.args[0]}")
-                elif exception.exc_type is CompletedException:
+                elif hasattr(exception,'exc_type') and exception.exc_type is CompletedException:
                     self.ctx.logger.info(f"Controller completed: {exception.args[0]}")
                 else:
                     self.ctx.logger.error(f"Exception: {exception}")

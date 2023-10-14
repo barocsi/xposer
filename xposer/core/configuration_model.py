@@ -5,6 +5,9 @@ from pydantic_settings import BaseSettings
 
 
 class ConfigModel(BaseSettings):
+    debug_enabled_for_built_in_http: bool = Field(default=True,
+                                         error_messages={
+                                         })
     log_to_console_enabled: bool = Field(default=True,
                                          error_messages={
                                          })
