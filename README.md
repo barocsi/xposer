@@ -115,7 +115,7 @@ or for pypi
 
 ## Use package in other projects
 upload to pypi using twine
-c
+twine upload --repository-url https://pypi.prod.omega.priv -u dist dist/xposer-0.9.12.tar.gz  --cert /usr/local/share/ca-certificates/om_chain_root_sub.crt
 
 
 ## Use this distribution

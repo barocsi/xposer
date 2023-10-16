@@ -77,6 +77,7 @@ class BaseFastApiService(BaseService):
             app=self.fastApi,
             host=host,
             port=port,
+            forwarded_allow_ips="*",
             log_level="debug",
             log_config=None
             )
