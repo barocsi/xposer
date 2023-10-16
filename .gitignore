@@ -21,3 +21,6 @@ pip-delete-this-directory.txt
 /build/
 /xposer.egg-info/
 *.egg-info/
+/build/
+/dist/
+/xposer.egg-info/
