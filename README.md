@@ -115,7 +115,7 @@ or for pypi
 
 ## Use package in other projects
 upload to pypi using twine
-twine upload --repository-url https://pypi.prod.omega.priv --cert /usr/local/share/ca-certificates/om_chain_root_sub.crt ./dist/*
+c
 
 
 ## Use this distribution
