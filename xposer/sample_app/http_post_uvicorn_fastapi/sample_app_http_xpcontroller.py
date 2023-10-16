@@ -19,6 +19,7 @@ class SampleAppHttpControllerConfigModel(BaseFastApiRouterConfigModel):
     def convert_to_int(cls, value):
         return int(value)
 
+
 class SampleAppHttpXPController(XPControllerBaseClass):
     config_prefix: str = "xpcontroller_"  # Class level
 
@@ -29,28 +30,29 @@ class SampleAppHttpXPController(XPControllerBaseClass):
         self.http_router: BaseFastApiService = None
         self.config: SampleAppHttpControllerConfigModel = self.config  # Type hint
 
-    def custom_exception_handler(self, loop, context):
-        exception = context.get('exception')
-        if isinstance(exception, asyncio.CancelledError):
-            print("Task was cancelled, this is expected behavior.")
-        else:
-            print(f"Caught exception: {exception}")
-
     def mergeConfigurationFromPrefix(self) -> SampleAppHttpControllerConfigModel:
-        return Configurator.mergeAttributesWithPrefix(SampleAppHttpControllerConfigModel,
-                                                      self.ctx.config,
-                                                      self.config_prefix,
-                                                      validate=True,
-                                                      strict=True)
+        return Configurator.mergeAttributesWithPrefix(
+            SampleAppHttpControllerConfigModel,
+            self.ctx.config,
+            self.config_prefix,
+            validate=True,
+            strict=True
+            )
 
     async def start_fastapi_service(self, callback):
-        self.uvicorn_server = await self.http_router.startService(
-            self.config.uvicorn_host,
-            self.config.uvicorn_port,
-            [SampleAppHTTPService.getRoute(self.ctx)],
-            api_prefix=self.api_prefix,
-            callback=callback,
-        )
+        try:
+            self.uvicorn_server = await self.http_router.startService(
+                self.config.uvicorn_host,
+                self.config.uvicorn_port,
+                [SampleAppHTTPService.getRoute(self.ctx)],
+                api_prefix=self.api_prefix,
+                callback=callback,
+                )
+        except Exception as e:
+            # Log the exception for debugging
+            self.ctx.logger.exception(f"Error starting FastApi service: {e}")
+            # Notify the future object about the failure
+            raise
 
     async def tearDownXPController(self):
         self.ctx.logger.info("tearDownXPController called")
@@ -62,7 +64,7 @@ class SampleAppHttpXPController(XPControllerBaseClass):
         try:
             task.result()
         except asyncio.TimeoutError:
-            raise ValueError("The FastAPI service did not start within 30 seconds!")
+            raise ValueError("The FastAPI service did not start within 10 seconds!")
 
     async def startXPController(self):
         # raise CompletedException(self.__class__.__name__)
@@ -70,7 +72,7 @@ class SampleAppHttpXPController(XPControllerBaseClass):
         future = asyncio.Future()
         fastapi_service_task = asyncio.create_task(self.start_fastapi_service(callback=future.set_result))
         fastapi_service_task.set_name("SampleAppHttpController:StartFastApiServiceTask")
-        timeout_task = asyncio.create_task(asyncio.wait_for(future, timeout=3))
+        timeout_task = asyncio.create_task(asyncio.wait_for(future, timeout=10))
         timeout_task.set_name("SampleAppHttpXPController::FastApiServiceTimeoutTask")
         timeout_task.add_done_callback(self.handle_timeout_exception)
         await future
