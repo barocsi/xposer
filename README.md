@@ -108,6 +108,7 @@ pip install
 pipreqs --force
 pip freeze > requirements.txt
 python setup.py sdist --dist-dir /shared/projects/packages/
+python setup.py sdist bdist_wheel
 
 ## Use package in other projects
 
