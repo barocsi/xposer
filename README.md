@@ -105,12 +105,18 @@ pip install
 
 ## Create local distribution
 
-pipreqs --force
-pip freeze > requirements.txt
-python setup.py sdist --dist-dir /shared/projects/packages/
-python setup.py sdist bdist_wheel
+`pipreqs --force`
+
+`pip freeze > requirements.txt`
+
+`python setup.py sdist --dist-dir /shared/projects/packages/`
+or for pypi 
+`python setup.py sdist bdist_wheel`
 
 ## Use package in other projects
+upload to pypi using twine
+twine upload --repository-url https://pypi.prod.omega.priv --cert /usr/local/share/ca-certificates/om_chain_root_sub.crt ./dist/*
+
 
 ## Use this distribution
 
