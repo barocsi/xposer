@@ -5,6 +5,7 @@ from typing import List
 
 import uvicorn
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from uvicorn.config import LOGGING_CONFIG
 
@@ -37,6 +38,14 @@ class BaseFastApiService(BaseService):
             callback=None
             ):
         self.fastApi = FastAPI(tail_slash=True)
+
+        self.fastApi.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+            )
 
         @self.fastApi.exception_handler(Exception)
         async def http_exception_handler(request, e):
