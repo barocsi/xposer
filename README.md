@@ -105,11 +105,18 @@ pip install
 
 ## Create local distribution
 
-pipreqs --force
-pip freeze > requirements.txt
-python setup.py sdist --dist-dir /shared/projects/packages/
+`pipreqs --force`
+
+`pip freeze > requirements.txt`
+
+`python setup.py sdist --dist-dir /shared/projects/packages/`
+or for pypi 
+`python setup.py sdist bdist_wheel`
 
 ## Use package in other projects
+upload to pypi using twine
+twine upload --repository-url https://pypi.prod.omega.priv -u dist dist/xposer-0.9.12.tar.gz  --cert /usr/local/share/ca-certificates/om_chain_root_sub.crt
+
 
 ## Use this distribution
 

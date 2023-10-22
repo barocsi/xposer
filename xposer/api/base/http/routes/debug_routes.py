@@ -4,10 +4,11 @@ import __main__
 from platform import python_version
 import pkg_resources
 import psutil
-from fastapi import APIRouter
+from fastapi import APIRouter, Body
 from xposer.core.context import Context
 import os
 import re
+
 
 def get_root_package_version():
     root_package_name = __main__.__package__
@@ -35,9 +36,12 @@ class XPDebugRouter:
     def getRoute(ctx: Context):
         router = APIRouter()
 
+        @router.post("/echo/")
+        async def echo(params: dict = Body(...)):
+            return {"echo": params}
+
         @router.get("/debug")
         async def read_debug_info():
-            # Existing code ...
             python_version_info = python_version()
             current_package_version = pkg_resources.get_distribution("xposer").version
             all_packages = {d.project_name: d.version for d in pkg_resources.working_set}
