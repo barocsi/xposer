@@ -9,7 +9,7 @@ def read_requirements():
 
 setup(
     name='xposer',
-    version='0.9.13',
+    version='0.9.14',
     packages=find_packages(),
     install_requires=read_requirements(),
     author='Aron Barocsi',
