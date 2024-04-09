@@ -18,10 +18,12 @@ python -m xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http
 --config=xposer/sample_app/http_post_uvicorn_fastapi/sample_app_http_config.yaml
 
 ## Publish
+
 Publish a message to the rpc_listener (external tool)
 _assume the topic name is "router_inbound"_
 echo '{"foo":"bar"}' | kafkacat -P -b localhost:9092 -t router_inbound
 
 ## Receive
+
 Check if topic is working (external tool)
 kafkacat -C -b localhost:9092 -t router_outbound

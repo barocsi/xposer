@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 class EventDispatcher:
     def __init__(self):
         self._events = {}

@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 import argparse
 import os
 import warnings
@@ -21,7 +23,7 @@ class Configurator:
         value_map = {
             'true': True, 'True': True, '1': True, 1: True,
             'false': False, 'False': False, '0': False, 0: False
-        }
+            }
         return value_map.get(value, value)
 
     def normalize_bool_fields(config_model: Union[BaseSettings, BaseModel]):
@@ -42,7 +44,8 @@ class Configurator:
                         if isinstance(item, dict):
                             new_dict = {
                                 k: Configurator.convert_to_bool(v) if isinstance(v, str) and v.lower() in ['true',
-                                                                                                           'false'] else v
+                                                                                                           'false']
+                                else v
                                 for k, v in item.items()}
                             new_list.append(new_dict)
                         elif isinstance(item, (BaseSettings, BaseModel)):
@@ -58,9 +61,11 @@ class Configurator:
             return config_model
 
     @staticmethod
-    def shallow_dict_from_object_with_prefix_removal(source: Union[Any, Dict[str, Any]],
-                                                     prefix: str = '',
-                                                     strict: bool = False) -> Dict[str, Any]:
+    def shallow_dict_from_object_with_prefix_removal(
+            source: Union[Any, Dict[str, Any]],
+            prefix: str = '',
+            strict: bool = False
+            ) -> Dict[str, Any]:
 
         if hasattr(source, 'dict'):
             source_data = source.dict()
@@ -79,10 +84,12 @@ class Configurator:
         return output
 
     @staticmethod
-    def prefilled_dict_from_class_and_object(target_cls: Union[Type[BaseModel], Type[BaseSettings], Dict[str, Any]],
-                                             source_obj: Optional[
-                                                 Union[BaseModel, BaseSettings, Dict[str, Any]]] = None,
-                                             strict: bool = False) -> Dict[str, Any]:
+    def prefilled_dict_from_class_and_object(
+            target_cls: Union[Type[BaseModel], Type[BaseSettings], Dict[str, Any]],
+            source_obj: Optional[
+                Union[BaseModel, BaseSettings, Dict[str, Any]]] = None,
+            strict: bool = False
+            ) -> Dict[str, Any]:
         if issubclass(target_cls, (BaseModel, BaseSettings)):
             shallow_target_dict = {k: v.get_default() for k, v in
                                    target_cls.model_fields.items()}
@@ -90,7 +97,8 @@ class Configurator:
             shallow_target_dict = target_cls
         else:
             raise ValueError(
-                "target_cls must be either a BaseModel-derived class, BaseSettings-derived class, or a dictionary.")
+                "target_cls must be either a BaseModel-derived class, BaseSettings-derived class, or a dictionary."
+                )
 
         if source_obj:
             if isinstance(source_obj, (BaseModel, BaseSettings)):
@@ -110,10 +118,12 @@ class Configurator:
         return shallow_target_dict
 
     @staticmethod
-    def prefilled_dict_from_object_and_object(target_obj: Union[BaseModel, Dict[str, Any]],
-                                              source_obj:
-                                              Union[BaseModel, BaseSettings, Dict[str, Any]] = None,
-                                              strict: bool = False) -> Dict[str, Any]:
+    def prefilled_dict_from_object_and_object(
+            target_obj: Union[BaseModel, Dict[str, Any]],
+            source_obj:
+            Union[BaseModel, BaseSettings, Dict[str, Any]] = None,
+            strict: bool = False
+            ) -> Dict[str, Any]:
         if isinstance(target_obj, (BaseModel, BaseSettings)):
             shallow_target_dict = {k: v.get_default() for k, v in
                                    target_obj.model_fields.items()}
@@ -126,7 +136,9 @@ class Configurator:
             shallow_target_dict = target_obj
         else:
             raise ValueError(
-                "target_cls must be either a BaseModel-derived class instance, BaseSettings-derived class instance, or a dictionary instance.")
+                "target_cls must be either a BaseModel-derived class instance, BaseSettings-derived class instance, "
+                "or a dictionary instance."
+                )
 
         if isinstance(source_obj, (BaseModel, BaseSettings)):
             source_data = source_obj.model_dump()
@@ -150,7 +162,8 @@ class Configurator:
             source: Union[BaseModel, Dict[str, Any]],
             prefix: str = '',
             validate: bool = True,
-            strict: bool = True) -> T:
+            strict: bool = True
+            ) -> T:
 
         source_dict = Configurator.shallow_dict_from_object_with_prefix_removal(source, prefix, strict=False)
         result_obj = None
@@ -186,7 +199,6 @@ class Configurator:
                     pass
                 elif isinstance(target, (BaseModel, BaseSettings)):
                     result_obj = type(target)(**bool_normalized_obj.model_dump())
-
 
         return result_obj
 
@@ -226,12 +238,13 @@ class Configurator:
         ROOT_PREFIX: str = 'xp_'
         # Determine configuration_filename source and value
         parser = argparse.ArgumentParser()
-        parser.add_argument("--config",
-                            type=str,
-                            help="Config file path",
-                            required=False,
-                            default=None
-                            )
+        parser.add_argument(
+            "--config",
+            type=str,
+            help="Config file path",
+            required=False,
+            default=None
+            )
         args, otherargs = parser.parse_known_args()
         config_filename = args.config
         if os.environ.get("XPOSER_CONFIG", None) is not None:
@@ -245,11 +258,13 @@ class Configurator:
         loaded_and_parsed_config = Configurator.parseConfig(config_filename)
 
         # Merge initially loaded values from configuration file
-        config_file_configuration: ConfigModel = Configurator.mergeAttributesWithPrefix(ConfigModel,
-                                                                                        loaded_and_parsed_config,
-                                                                                        ROOT_PREFIX,
-                                                                                        validate=False,
-                                                                                        strict=False)
+        config_file_configuration: ConfigModel = Configurator.mergeAttributesWithPrefix(
+            ConfigModel,
+            loaded_and_parsed_config,
+            ROOT_PREFIX,
+            validate=False,
+            strict=False
+            )
 
         # Override configuration from variables from environment
         environment_overridden_configuration: ConfigModel = Configurator.mergeAttributesWithPrefix(
@@ -258,7 +273,8 @@ class Configurator:
              in os.environ.items()},
             ROOT_PREFIX,
             validate=False,
-            strict=False)
+            strict=False
+            )
 
         cli_args_with_prefix = Configurator.getVarsFromCLIArgs(parser)
 
@@ -268,7 +284,8 @@ class Configurator:
             cli_args_with_prefix,
             ROOT_PREFIX,
             validate=False,
-            strict=False)
+            strict=False
+            )
 
         # Normalize bool fields
         bool_normalized_configuration = Configurator.normalize_bool_fields(cli_overridden_configuration)

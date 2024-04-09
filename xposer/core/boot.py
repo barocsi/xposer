@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 import asyncio
 import queue
 import signal
@@ -52,7 +54,7 @@ class Boot:
                 exception = self.ctx.exception_queue.get_nowait()
                 if isinstance(exception, CompletedException):
                     self.ctx.logger.info(f"Controller completed: {exception.args[0]}")
-                elif hasattr(exception,'exc_type') and exception.exc_type is CompletedException:
+                elif hasattr(exception, 'exc_type') and exception.exc_type is CompletedException:
                     self.ctx.logger.info(f"Controller completed: {exception.args[0]}")
                 else:
                     self.ctx.logger.error(f"Exception: {exception}")
@@ -120,7 +122,7 @@ class Boot:
             custom_logger=logger,
             task_slug='boot_xpcontroller_startXPController',
             re_raise_exception=True
-        )
+            )
         await xptask_initialization_future
         self.ctx.xptask_list.append(xptask)
         context.xpcontroller = xpcontroller

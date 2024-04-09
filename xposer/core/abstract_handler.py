@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 from abc import ABC, abstractmethod
 
 

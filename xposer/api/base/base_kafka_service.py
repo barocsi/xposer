@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 import asyncio
 import inspect
 import json
@@ -14,14 +16,16 @@ class BaseKafkaService(BaseService):
         super().__init__(ctx)
         _cancelled: bool = False
 
-    async def start_service(self,
-                            server_string: str,
-                            group_id: str,
-                            inbound_topic: str,
-                            outbound_topic: str,
-                            exception_topic: str,
-                            handler_func: Callable = None,
-                            produce_on_result: bool = False):
+    async def start_service(
+            self,
+            server_string: str,
+            group_id: str,
+            inbound_topic: str,
+            outbound_topic: str,
+            exception_topic: str,
+            handler_func: Callable = None,
+            produce_on_result: bool = False
+            ):
 
         self._cancelled = False
 
@@ -37,10 +41,10 @@ class BaseKafkaService(BaseService):
             'heartbeat.interval.ms': '1000',
             'session.timeout.ms': '6000',
             'enable.auto.commit': False
-        }
+            }
         producer_config = {
             'bootstrap.servers': server_string,
-        }
+            }
 
         async def consumer_handler_func(data):
             """Warning: This is non thread-safe"""
@@ -52,7 +56,7 @@ class BaseKafkaService(BaseService):
                 response = {
                     'result': processed_data,
                     'correlation_id': correlation_id
-                }
+                    }
                 if produce_on_result:
                     try:
                         await self._producer.produce(outbound_topic, json.dumps(response))
@@ -64,15 +68,17 @@ class BaseKafkaService(BaseService):
                     exception_data = {
                         'exception': str(e),
                         'correlation_id': correlation_id
-                    }
+                        }
                     await self._producer.produce(exception_topic, json.dumps(exception_data))
 
         # Initiate AIOProducer and AIOConsumer
         self._producer = AIOProducer(producer_config)
-        self._consumer = AIOConsumer(consumer_config,
-                                     consumer_handler_func,
-                                     inbound_topics=[inbound_topic],
-                                     exception_queue=self.ctx.exception_queue)
+        self._consumer = AIOConsumer(
+            consumer_config,
+            consumer_handler_func,
+            inbound_topics=[inbound_topic],
+            exception_queue=self.ctx.exception_queue
+            )
         self.ctx.logger.info(f"Service initialized successfully. Listening on topic: {inbound_topic}.")
 
     async def stop_router(self):

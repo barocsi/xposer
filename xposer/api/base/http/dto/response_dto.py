@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 from typing import Any, Optional
 
 from pydantic import BaseModel

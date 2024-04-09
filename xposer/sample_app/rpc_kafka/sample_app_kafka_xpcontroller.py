@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 import asyncio
 import json
 from typing import Any
@@ -13,31 +15,37 @@ from xposer.sample_app.rpc_kafka.sample_app_kafka_service import SampleAppKafkaS
 
 
 class SampleAppKafkaXPControllerConfigModel(BaseKafkaServiceConfigModel):
-    foo: str = Field(default='foo',
-                     description="Some xpcontroller specific config")
+    foo: str = Field(
+        default='foo',
+        description="Some xpcontroller specific config"
+        )
     bar: str = Field('bar')
     model_config = ConfigDict(extra='allow')
 
 
 class SampleAppKafkaXPController(XPControllerBaseClass):
     config_prefix: str = "xpcontroller_"
+
     def __init__(self, ctx: Context):
         super().__init__(ctx)
         self.config_prefix: str = "xpcontroller_"
         self.kafka_router: BaseKafkaService | Any = None
         self.config: SampleAppKafkaXPControllerConfigModel = self.config  # Type hint
 
-
     def mergeConfigurationFromPrefix(self) -> SampleAppKafkaXPControllerConfigModel:
-        return Configurator.mergeAttributesWithPrefix(SampleAppKafkaXPControllerConfigModel,
-                                                      self.ctx.config,
-                                                      self.config_prefix,
-                                                      validate=True,
-                                                      strict=True)
+        return Configurator.mergeAttributesWithPrefix(
+            SampleAppKafkaXPControllerConfigModel,
+            self.ctx.config,
+            self.config_prefix,
+            validate=True,
+            strict=True
+            )
 
     async def RPCHandler(self, data: Any):
         self.ctx.logger.info(
-            f"Sample call with correlation id:{data.get('correlation_id', 'None')} receives sample raw data:\n{json.dumps(data, indent=4)}")
+            f"Sample call with correlation id:{data.get('correlation_id', 'None')} receives sample raw data:\n"
+            f"{json.dumps(data, indent=4)}"
+            )
         return json.dumps({"result": "whoa", "originalfoo": data.get('foo', 'None')})
 
     async def start_kafka_service(self, callback):
@@ -49,7 +57,8 @@ class SampleAppKafkaXPController(XPControllerBaseClass):
                 outbound_topic=self.config.router_kafka_outbound_topic,
                 exception_topic=self.config.router_kafka_exception_topic,
                 handler_func=self.RPCHandler,
-                produce_on_result=True)
+                produce_on_result=True
+                )
             callback(None)
         except Exception as e:
             # Log the exception for debugging

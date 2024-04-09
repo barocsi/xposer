@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 import asyncio
 import inspect
 import logging
@@ -35,7 +37,8 @@ class XPTask:
             # If the loop is not the current loop, run in a threadsafe manner
             else:
                 future = asyncio.run_coroutine_threadsafe(
-                    asyncio.wait_for(asyncio.gather(*pending, return_exceptions=True), timeout), loop)
+                    asyncio.wait_for(asyncio.gather(*pending, return_exceptions=True), timeout), loop
+                    )
                 return future.result(timeout=timeout)
         except asyncio.TimeoutError:
             ctx.logger.warn(f"Tasks did not cancel within {timeout} seconds.")
@@ -122,15 +125,17 @@ class XPTask:
         # self.wrapped_threaded_func_task_loop.run_forever()
         self.wrapped_threaded_func_task_loop.run_forever()
 
-    def startup(self,
-                to_be_threadified_func: Callable,
-                initialization_callback: Callable,
-                teardown_func: Callable,
-                main_event_loop: asyncio.AbstractEventLoop,
-                exception_callback: Callable[[Union[Any, None], Exception], None],
-                custom_logger: Optional[logging.Logger] = None,
-                task_slug: str = '',
-                re_raise_exception: bool = True) -> T:
+    def startup(
+            self,
+            to_be_threadified_func: Callable,
+            initialization_callback: Callable,
+            teardown_func: Callable,
+            main_event_loop: asyncio.AbstractEventLoop,
+            exception_callback: Callable[[Union[Any, None], Exception], None],
+            custom_logger: Optional[logging.Logger] = None,
+            task_slug: str = '',
+            re_raise_exception: bool = True
+            ) -> T:
         self.main_event_loop = main_event_loop
         self.on_exception_callback = exception_callback
         self.initialization_callback = initialization_callback

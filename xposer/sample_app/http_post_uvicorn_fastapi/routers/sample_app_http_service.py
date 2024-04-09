@@ -1,8 +1,7 @@
-import unittest
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
 
-from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ValidationError
-from starlette.testclient import TestClient
 
 from xposer.api.base.http.decorators.wrap_response_decorator import ResponseWrapperDecorator
 from xposer.core.context import Context

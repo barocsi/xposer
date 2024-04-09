@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 import logging
 
 from pydantic import ConfigDict, Field, field_validator
@@ -5,30 +7,46 @@ from pydantic_settings import BaseSettings
 
 
 class ConfigModel(BaseSettings):
-    debug_enabled_for_built_in_http: bool = Field(default=True,
-                                         error_messages={
-                                         })
-    log_to_console_enabled: bool = Field(default=True,
-                                         error_messages={
-                                         })
-    log_to_console_loglevel: int | str = Field(logging.DEBUG,
-                                               error_messages={
-                                               })
-    log_to_kafka_enabled: bool = Field(default=True,
-                                       error_messages={
-                                       })
-    log_to_kafka_server_string: str = Field('localhost:9092',
-                                            error_messages={
-                                            })
-    log_to_kafka_server_log_topic: str = Field('log',
-                                               error_messages={
-                                               })
-    xpcontroller_module_name: str | None = Field(...,
-                                                 error_messages={
-                                                 })
-    xpcontroller_class_name: str | None = Field(...,
-                                                error_messages={
-                                                })
+    debug_enabled_for_built_in_http: bool = Field(
+        default=True,
+        error_messages={
+            }
+        )
+    log_to_console_enabled: bool = Field(
+        default=True,
+        error_messages={
+            }
+        )
+    log_to_console_loglevel: int | str = Field(
+        logging.DEBUG,
+        error_messages={
+            }
+        )
+    log_to_kafka_enabled: bool = Field(
+        default=True,
+        error_messages={
+            }
+        )
+    log_to_kafka_server_string: str = Field(
+        'localhost:9092',
+        error_messages={
+            }
+        )
+    log_to_kafka_server_log_topic: str = Field(
+        'log',
+        error_messages={
+            }
+        )
+    xpcontroller_module_name: str | None = Field(
+        ...,
+        error_messages={
+            }
+        )
+    xpcontroller_class_name: str | None = Field(
+        ...,
+        error_messages={
+            }
+        )
 
     model_config = ConfigDict(extra='allow', arbitrary_types_allowed=True)
 

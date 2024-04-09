@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 import queue
 from logging import Logger
 from typing import Any, Dict, List

@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 import asyncio
 import json
 from concurrent.futures import ThreadPoolExecutor
@@ -41,12 +43,14 @@ class AIOProducer:
 
 
 class AIOConsumer:
-    def __init__(self,
-                 configs,
-                 handler_func,
-                 inbound_topics: list,
-                 exception_queue: Queue,
-                 loop=None):
+    def __init__(
+            self,
+            configs,
+            handler_func,
+            inbound_topics: list,
+            exception_queue: Queue,
+            loop=None
+            ):
         self._loop = loop or asyncio.get_event_loop()
         self._consumer = Consumer(configs)
         self._exception_queue = exception_queue

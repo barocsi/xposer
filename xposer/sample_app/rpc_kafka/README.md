@@ -17,11 +17,13 @@ example)
 python -m xposer.sample_app.rpc_kafka.sample_app_kafka
 --config=xposer/sample_app/rpc_kafka/sample_app_kafka_config.yaml
 
-## Publish 
+## Publish
+
 Publish a message to the rpc_listener (external tool)
 _assume the topic name is "router_inbound"_
 echo '{"foo":"bar"}' | kafkacat -P -b localhost:9092 -t router_inbound
 
 ## Receive
+
 Check if topic is working (external tool)
 kafkacat -C -b localhost:9092 -t router_outbound

@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 import asyncio
 import json
 from typing import Any
@@ -22,17 +24,20 @@ class SampleAppKafka:
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
-        self.config = Configurator.mergeAttributesWithPrefix(SampleAppKafkaConfigModel,
-                                                             ctx.config,
-                                                             self.config_prefix,
-                                                             validate=True,
-                                                             strict=True
-                                                             )
+        self.config = Configurator.mergeAttributesWithPrefix(
+            SampleAppKafkaConfigModel,
+            ctx.config,
+            self.config_prefix,
+            validate=True,
+            strict=True
+            )
         self.ctx.logger.info(f"Initialized application")
 
     async def RPCHandler(self, data: Any):
         self.ctx.logger.info(
-            f"Sample call with correlation id:{data.get('correlation_id', 'None')} receives sample raw data:\n{json.dumps(data, indent=4)}")
+            f"Sample call with correlation id:{data.get('correlation_id', 'None')} receives sample raw data:\n"
+            f"{json.dumps(data, indent=4)}"
+            )
         return json.dumps({"result": "whoa", "originalfoo": data.get('foo', 'None')})
 
 

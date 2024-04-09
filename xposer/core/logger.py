@@ -1,3 +1,5 @@
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
+
 import json
 import logging
 import os
@@ -42,7 +44,9 @@ class XposeLogger(logging.Logger):
     def makeRecord(self, *args, **kwargs):
         record = super().makeRecord(*args, **kwargs)
         filename, lineno, funcName = self.findCaller()
-        short_fn = os.path.basename(filename) if len(filename.split(os.sep)) <= 2 else f"{filename.split(os.sep)[-3]}/{os.path.basename(filename)}"
+        short_fn = os.path.basename(filename) if len(
+            filename.split(os.sep)
+            ) <= 2 else f"{filename.split(os.sep)[-3]}/{os.path.basename(filename)}"
         record.filename, record.lineno, record.funcName = short_fn, lineno, funcName
         return record
 
@@ -69,8 +73,12 @@ def get_logger(appConfig: ConfigModel):
     if appConfig.log_to_console_enabled:
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
-        ch.setFormatter(logging.Formatter(
-            f'%(asctime)-25s | %(levelname)-8s | %(name)-15s | %(filename)-30s | %(funcName)-30s \n{"-" * 26}» %(levelname)-8s | %(message)s\n'))
+        ch.setFormatter(
+            logging.Formatter(
+                f'%(asctime)-25s | %(levelname)-8s | %(name)-15s | %(filename)-30s | %(funcName)-30s \n{"-" * 26}» %('
+                f'levelname)-8s | %(message)s\n'
+                )
+            )
         logger.addHandler(ch)
 
     if appConfig.log_to_kafka_enabled:
@@ -78,8 +86,11 @@ def get_logger(appConfig: ConfigModel):
         topic_map = {lvl: f"{lvl.lower()}_topic" for lvl in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']}
         kh = KafkaLoggingHandler(producer, topic_map)
         kh.setLevel(logging.DEBUG)
-        kh.setFormatter(logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s::%(funcName)s] - %(message)s'))
+        kh.setFormatter(
+            logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s::%(funcName)s] - %(message)s'
+                )
+            )
         logger.addHandler(kh)
         logger.debug(f"Logger initialized: {logger.name}")
 

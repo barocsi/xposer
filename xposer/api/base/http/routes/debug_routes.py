@@ -1,13 +1,16 @@
-import __main__
+#  Copyright (c) 2024. Aron Barocsi | All rights reserved.
 
+import __main__
+import os
+import re
 # Existing imports
 from platform import python_version
+
 import pkg_resources
 import psutil
 from fastapi import APIRouter, Body
+
 from xposer.core.context import Context
-import os
-import re
 
 
 def get_root_package_version():
