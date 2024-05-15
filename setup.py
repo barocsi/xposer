@@ -9,7 +9,7 @@ def read_requirements():
 
 setup(
     name='xposer',
-    version='0.9.15',
+    version='1.0.0',
     packages=find_packages(),
     install_requires=read_requirements(),
     author='Aron Barocsi',
@@ -17,5 +17,5 @@ setup(
     description='Xpose your functions as microservices over arbitrary channels using standardized logging and configuration',
     license='Private',
     keywords='Expose functions wrapperd',
-    url='URL to the package repository',
+    url='https://github.com/barocsi/xposer',
     )
