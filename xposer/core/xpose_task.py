@@ -45,7 +45,6 @@ class XPTask:
         except asyncio.CancelledError:
             ctx.logger.warn("Task was cancelled, this is expected behavior.")
         except Exception as e:
-            print("LOFASZ")
             print(e)  # Handle other exceptions
         finally:
             await loop.shutdown_asyncgens()

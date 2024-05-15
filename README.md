@@ -1,7 +1,6 @@
 # xposer
 
-Unified handler logic exposition over various channels using centralized logger and configuration management with
-context propagation
+Unified handler logic exposition with simple configuration management and integrated logging to Kafka.
 
 ## Configuration
 
@@ -91,33 +90,4 @@ these tasks are not gathered and possibly run forever
 threaded functions are always awaited and exceptions are routed to the main thread using threadsafe Queue.queue passed
 downstream using explicit Context propagation
 
-## Docker
-
-## Examples in sample_app folder
-
-### rpc_kafka package
-
-# Import local packages
-
-pip install
-
-# Create a package
-
-## Create local distribution
-
-`pipreqs --force`
-
-`pip freeze > requirements.txt`
-
-`python setup.py sdist --dist-dir /shared/projects/packages/`
-or for pypi 
-`python setup.py sdist bdist_wheel`
-
-## Use package in other projects
-upload to pypi using twine
-twine upload --repository-url https://pypi.prod.omega.priv -u dist dist/xposer-0.9.12.tar.gz  --cert /usr/local/share/ca-certificates/om_chain_root_sub.crt
-
-
-## Use this distribution
-
-### Local pip install
+## Examples and container samples in the sample_app folder.
