@@ -1,0 +1,19 @@
+# boot and xpcontroller
+xp_xpcontroller_module_name: "xposer.sample_app.rpc_kafka.sample_app_kafka_xpcontroller"
+xp_xpcontroller_class_name: "SampleAppKafkaXPController"
+xp_highlevel_variable: "passed"
+xp_log_to_console_enabled: "true"
+xp_log_to_console_loglevel: "DEBUG"
+xp_log_to_kafka_enabled: "true"
+xp_log_to_kafka_server_string: "0.0.0.0:9092"
+
+# Built-in config
+xpcontroller_kafka_inbound_topic: "router_inbound"
+xpcontroller_kafka_outbound_topic: "router_outbound"
+xpcontroller_kafka_exception_topic: "router_exception"
+xpcontroller_kafka_server_string: "0.0.0.0:9092"
+xpcontroller_kafka_group_id: "router"
+xpcontroller_kafka_bar: "baz"
+
+# App Sub config
+xpapp_logic_param_to_override: "not_jens"

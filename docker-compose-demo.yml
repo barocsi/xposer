@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  barocsi_xpose_http:
+    build: .
+    image: barocsi/xposer:latest
+    pull_policy: never
+    environment:
+      - LOG_TO_KAFKA_SERVER_STRING=host.docker.internal:9092
+      - CONFIG_OPTION=option1
+      - UVICORN_HOST=0.0.0.0  # Default IP binding
+      - UVICORN_PORT=8000     # Default port
+    command: ["python", "-m", "xposer.sample_app.http_post_uvicorn_fastapi.sample_app_http", "--config=xposer/sample_app/http_post_uvicorn_fastapi/sample_app_http_config.yaml", "--host", "$UVICORN_HOST", "--port", "$UVICORN_PORT"]
